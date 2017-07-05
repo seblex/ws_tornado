@@ -3,12 +3,15 @@ import redis
 import json
 import pymysql
 
+from Loger import Loger
+from Config import Config
+
 #responce 'ping'
 def ping(data):
 	responce = {}
 	responce['text'] = 'pong'
 	responce['type'] = 'ping'
-
+	Loger.logger('hello')
 	return responce
 
 def viewed_messages(data):
@@ -30,7 +33,8 @@ def new_message(data):
 	return data
 
 def sounds(data):
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='050184', db='mkrep5', charset='utf8')
+	config = Config.getDBConfig()
+	conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
 	cur = conn.cursor()
 	query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
 	cur.execute(query)
@@ -91,8 +95,9 @@ def mess(data):
 def allusers(data):
 	employees = getEmployeeCache()
 	all_employees = []
+	config = Config.getRedisConfig()
 	for employee in employees:
-		r = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
+		r = redis.StrictRedis(host=config['host'], port=config['port'], db=config['db'])
 		result_e = json.loads(r.hget('employee', employee))
 		all_employees.append(result_e)
 	
@@ -140,7 +145,8 @@ def allusers(data):
 	return responce
 
 def alldialogs(data):
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='050184', db='mkrep5', charset='utf8')
+	config = Config.getDBConfig()
+	conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
 	cur = conn.cursor()
 	query = "SELECT * FROM `" + data['prefix'] + "dialogs` WHERE `adresat` = '" + data['user_id'] + "' AND `name` = 'NULL'"
 	#print query
@@ -187,6 +193,7 @@ def closeChat(data):
 	return data
 
 def getEmployeeCache():
-	r = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
+	config = Config.getRedisConfig()
+	r = redis.StrictRedis(host=config['host'], port=config['port'], db=config['db'])
 	result = r.get('employee_id_list')
 	return json.loads(result)

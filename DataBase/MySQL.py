@@ -1,8 +1,11 @@
 import pymysql
 
+from Config import Config
+
 #responce SELECT
 def db_select(responce):
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='050184', db='mkrep5', charset='utf8')
+	config = Config.getDBConfig()
+	conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
 	cur = conn.cursor()
 	cur.execute(responce)
 	#print(cur.description)
@@ -19,7 +22,8 @@ def db_select(responce):
 
 #get employee_id
 def get_employee_id(user_id, prefix):
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='050184', db='mkrep5', charset='utf8')
+	config = Config.getDBConfig()
+	conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
 	cur = conn.cursor()
 	query = "SELECT id FROM " + prefix + "employee WHERE user_id = " + user_id
 	cur.execute(query)
