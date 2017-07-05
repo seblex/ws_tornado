@@ -8,11 +8,13 @@ def db_select(responce):
 	conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
 	cur = conn.cursor()
 	cur.execute(responce)
-	#print(cur.description)
+	result = []
 	for row in cur:
-		print(row)
+		result.append(row)
 	cur.close()
 	conn.close()
+
+	return result
 
 #responce INSERT
 

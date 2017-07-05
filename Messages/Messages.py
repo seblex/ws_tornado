@@ -5,13 +5,14 @@ import pymysql
 
 from Loger import Loger
 from Config import Config
+from DataBase import MySQL
 
 #responce 'ping'
 def ping(data):
 	responce = {}
 	responce['text'] = 'pong'
 	responce['type'] = 'ping'
-	Loger.logger('hello')
+	
 	return responce
 
 def viewed_messages(data):
@@ -33,18 +34,11 @@ def new_message(data):
 	return data
 
 def sounds(data):
-	config = Config.getDBConfig()
-	conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
-	cur = conn.cursor()
 	query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
-	cur.execute(query)
-	
+	cur = MySQL.db_select(query)
 	for row in cur:
 		res = row
 	
-	cur.close()
-	conn.close()
-
 	sounds = {}
 	if res[9] == 1:
 		sounds['sound_mess_on_live'] = res[13]
@@ -54,7 +48,7 @@ def sounds(data):
 		sounds['sound_like_on_live'] = res[15]
 	if res[12] == 1:
 		sounds['sound_mess_on_chat'] = res[16]
-	#for ind in res:
+	
 	responce = {}
 	responce['type'] = 'sounds'
 	responce['sounds'] = sounds
@@ -145,18 +139,11 @@ def allusers(data):
 	return responce
 
 def alldialogs(data):
-	config = Config.getDBConfig()
-	conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
-	cur = conn.cursor()
 	query = "SELECT * FROM `" + data['prefix'] + "dialogs` WHERE `adresat` = '" + data['user_id'] + "' AND `name` = 'NULL'"
-	#print query
-	cur.execute(query)
-	#print(cur.description)
-	for row in cur:
+	result = MySQL.db_select(query)
+	for row in result:
 		print(row)
 
-	cur.close()
-	conn.close()
 	#return data
 
 def notice(data):
