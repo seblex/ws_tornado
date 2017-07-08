@@ -51,6 +51,15 @@ class SocketServer(WebSocket):
 			result = json.dumps(responce)
 			self.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'live':
+			for client in clients:
+				client.sendMessage(u'' + responce)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'delMess':
+			result = json.dumps(responce)
+			for client in clients:
+				client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
 
     def handleConnected(self):
     	print(self.address, 'connected')

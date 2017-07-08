@@ -17,6 +17,13 @@ def db_select(responce):
 	return result
 
 #responce INSERT
+#def db_insert(responce):
+	#config = Config.getDBConfig()
+	#conn = pymysql.connect(host=config['host'], user=config['user'], passwd=config['passwd'], db=config['db'], charset=config['charset'])
+	#cur = conn.cursor()
+	#cur.execute(responce)
+	#cur.close()
+	#conn.close()
 
 #responce UPDATE
 

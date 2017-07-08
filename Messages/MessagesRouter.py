@@ -32,7 +32,7 @@ def route(data, count_online):
 		responce = Messages.online(data, count_online)
 
 	if(data['type'] == 'live'):
-		responce = Messages.live(data)
+		responce = Messages.live(data, count_online)
 
 	if(data['type'] == 'comment'):
 		responce = Messages.comment(data)
@@ -85,8 +85,8 @@ def route(data, count_online):
 	if(data['type'] == 'delComm'):
 		responce = Messages.delComm(data)
 
-	if(data['type'] == 'delmess'):
-		responce = Messages.delmess(data)
+	if(data['type'] == 'delMess'):
+		responce = Messages.delmess(data, count_online)
 
 	if(data['type'] == 'closeChat'):
 		responce = Messages.closeChat(data)

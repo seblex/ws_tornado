@@ -1,11 +1,16 @@
+# -- coding: utf-8 --
 #work with messages
 import redis
 import json
 import pymysql
+import datetime
+import time
+import random
 
 from Loger import Loger
 from Config import Config
 from DataBase import MySQL
+from DataBase import Mongo
 
 #responce 'ping'
 def ping(data):
@@ -65,8 +70,26 @@ def online(data, count_online):
 	
 	return responce
 
-def live(data):
-	return data
+def live(data, count_online):
+	#print(data)
+	message = {}
+	message['parent_id'] = data['user_id']
+	message['text'] = data['message']
+	message['to_id'] = data['adresat']
+	message['annexes'] = data['files']
+	message['isfile'] = 'false'
+	date = time.time()
+	message['date'] = date
+	new_mess_id = Mongo.insertToMessages(message)
+	date_message = datetime.datetime.fromtimestamp(date).strftime('%d %b %Y %H:%M:%S')
+	message['id'] = str(message['_id'])
+	message['_id'] = ''#str(new_mess_id)
+	message['date'] = date_message
+	message['like'] = 0
+	message['online'] = count_online
+	message['type'] = 'live'
+	
+	return json.dumps(message)
 
 def comment(data):
 	return data
@@ -173,8 +196,16 @@ def dopmess(data):
 def delComm(data):
 	return data
 
-def delmess(data):
-	return data
+def delmess(data, count_online):
+	mess_id = data['id']
+	Mongo.deleteMessage(mess_id)
+
+	outmessage = {}
+	outmessage['online'] = count_online
+	outmessage['msg_id'] = mess_id
+	outmessage['type'] = 'delmess'
+
+	return outmessage
 
 def closeChat(data):
 	return data
