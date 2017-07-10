@@ -22,7 +22,6 @@ class SocketServer(WebSocket):
 		# getting message
 		data = json.loads(self.data)
 		#getting users id and prefix
-		print(data['type'])
 		if clients[self] == 0:
 			user_id = data['iam']
 			prefix = data['prefix']
@@ -59,6 +58,34 @@ class SocketServer(WebSocket):
 			result = json.dumps(responce)
 			for client in clients:
 				client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'firstMessages':
+			result = json.dumps(responce)
+			self.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'comment':
+			result = json.dumps(responce)
+			self.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'showComments':
+			result = json.dumps(responce)
+			self.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'delComm':
+			result = json.dumps(responce)
+			for client in clients:
+				client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'likecomm':
+			result = json.dumps(responce)
+			for client in clients:
+				client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'sound':
+			result = json.dumps(responce)
+			for client in clients:
+				if (client != self): 
+					client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce')
 
     def handleConnected(self):

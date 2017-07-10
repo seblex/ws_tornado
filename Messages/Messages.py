@@ -61,7 +61,11 @@ def sounds(data):
 	return responce
 
 def sound(data):
-	return data
+	outmessage = {}
+	outmessage['type'] = data['type']
+	outmessage['sound_event'] = data['sound_event']
+
+	return outmessage
 
 def online(data, count_online):
 	responce = {}
@@ -83,7 +87,7 @@ def live(data, count_online):
 	new_mess_id = Mongo.insertToMessages(message)
 	date_message = datetime.datetime.fromtimestamp(date).strftime('%d %b %Y %H:%M:%S')
 	message['id'] = str(message['_id'])
-	message['_id'] = ''#str(new_mess_id)
+	message['_id'] = ''
 	message['date'] = date_message
 	message['like'] = 0
 	message['online'] = count_online
@@ -91,17 +95,101 @@ def live(data, count_online):
 	
 	return json.dumps(message)
 
-def comment(data):
-	return data
+def first_messages(data, count_online):
+	messages = Mongo.getFirstMessages()
+	outmessages = []
+	for mess in messages:
+		message = {}
+		message['text'] = mess['text']
+		message['to_id'] = mess['to_id']
+		message['parent_id'] = mess['parent_id']
+		message['date'] = mess['date']
+		message['id'] = str(mess['_id'])
+		message['isfile'] = mess['isfile']
+		message['annexes'] = mess['annexes']
+		outmessages.append(message)
+	count_messages = Mongo.getCountAllMessages()
+	outmessage = {}
+	outmessage['type'] = 'firstMessages'
+	outmessage['count_online'] = count_online
+	outmessage['messages'] = outmessages
+	outmessage['count'] = count_messages
+			
+	return outmessage
 
-def likemess(data):
-	return data
+def comment(data, count_online):
 
-def likecomm(data):
-	return data
+	coll = {}
+	coll['text'] = data['message']
+	coll['parent_id'] = data['user_id']
+	coll['msg_id'] = data['message_id']
+	coll['date'] = time.time()
+	coll['like'] = 0
 
-def showComments(data):
-	return data
+	Mongo.insertNewComment(coll)
+
+	comments = Mongo.getComments(data['message_id'])
+
+	comm = []
+	for comment in comments:
+		c = {}
+		c['id'] = str(comment['_id'])
+		c['text'] = comment['text']
+		c['parent_id'] = comment['parent_id']
+		c['date'] = comment['date']
+		c['like'] = comment['like']
+		comm.append(c)
+
+	outmessage = {}
+	outmessage['online'] = count_online
+	outmessage['messages'] = comm
+	outmessage['msg_id'] = data['message_id']
+	outmessage['type'] = 'comment'
+
+	return outmessage
+
+def likemess(data, count_online):
+	print(data)
+
+def likecomm(data, count_online):
+	like = Mongo.issetLike(data)
+	if (like == 0):
+		likes = Mongo.commentLike(data['msg_id'])
+		Mongo.setLikeComm(data['msg_id'], data['id'])
+	else:
+		likes = Mongo.minusCommentsLike(data['msg_id'])
+		Mongo.deleteCommentsLike(data)
+
+	outmessage = {}
+	outmessage['msg_id'] = data['msg_id']
+	outmessage['likes'] = likes
+	outmessage['employee_id'] = data['id']
+	outmessage['type'] = 'likecomm'
+	outmessage['online'] = count_online
+
+	return outmessage	
+
+def showComments(data, count_online):
+
+	comments = Mongo.getComments(data['msg_id'])
+
+	comm = []
+	for comment in comments:
+		c = {}
+		c['id'] = str(comment['_id'])
+		c['text'] = comment['text']
+		c['parent_id'] = comment['parent_id']
+		c['date'] = comment['date']
+		c['like'] = comment['like']
+		comm.append(c)
+
+	outmessage = {}
+	outmessage['online'] = count_online
+	outmessage['messages'] = comm
+	outmessage['msg_id'] = data['msg_id']
+	outmessage['type'] = 'showComments'
+
+	return outmessage
 
 def dialog(data):
 	return data
@@ -193,8 +281,15 @@ def hangup(data):
 def dopmess(data):
 	return data
 
-def delComm(data):
-	return data
+def delComm(data, count_online):
+
+	Mongo.delComm(data['id'])
+
+	outmessage = {}
+	outmessage['type'] = 'delComm'
+	outmessage['id'] = data['id']
+
+	return outmessage
 
 def delmess(data, count_online):
 	mess_id = data['id']

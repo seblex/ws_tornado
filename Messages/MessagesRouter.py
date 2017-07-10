@@ -1,6 +1,9 @@
 import Messages
 
 def route(data, count_online):
+	if(data['type'] == 'firstMessages'):
+		responce = Messages.first_messages(data, count_online)
+
 	if(data['type'] == 'ping'):
 		responce = Messages.ping(data)
 
@@ -35,16 +38,16 @@ def route(data, count_online):
 		responce = Messages.live(data, count_online)
 
 	if(data['type'] == 'comment'):
-		responce = Messages.comment(data)
+		responce = Messages.comment(data, count_online)
 
 	if(data['type'] == 'likemess'):
-		responce = Messages.likemess(data)
+		responce = Messages.likemess(data, count_online)
 
 	if(data['type'] == 'likecomm'):
-		responce = Messages.likecomm(data)
+		responce = Messages.likecomm(data, count_online)
 
 	if(data['type'] == 'showComments'):
-		responce = Messages.showComments(data)
+		responce = Messages.showComments(data, count_online)
 
 	if(data['type'] == 'dialog'):
 		responce = Messages.dialog(data)
@@ -83,7 +86,7 @@ def route(data, count_online):
 		responce = Messages.dopmess(data)
 
 	if(data['type'] == 'delComm'):
-		responce = Messages.delComm(data)
+		responce = Messages.delComm(data, count_online)
 
 	if(data['type'] == 'delMess'):
 		responce = Messages.delmess(data, count_online)
