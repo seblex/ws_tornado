@@ -118,3 +118,27 @@ def deleteCommentsLike(data):
 
 	like = db.likes.find_one({'employee_id': employee_id, 'message_id': message_id})
 	db.likes.remove(like)
+
+def messageLike(msg_id):
+	c = MongoClient()
+	db = c.ws_server
+
+	message = db.messages.find_one({'_id': ObjectId(msg_id)})
+	
+	cl = int(message['like'])
+	message['like'] = cl + 1
+	db.messages.save(message)
+
+	return message['like']
+
+def minusMessagesLike(msg_id):
+	c = MongoClient()
+	db = c.ws_server
+
+	message = db.messages.find_one({'_id': ObjectId(msg_id)})
+
+	cl = message['like']
+	message['like'] = cl - 1
+	db.messages.save(message)
+
+	return message['like']

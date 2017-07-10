@@ -84,12 +84,13 @@ def live(data, count_online):
 	message['isfile'] = 'false'
 	date = time.time()
 	message['date'] = date
+	message['like'] = 0
 	new_mess_id = Mongo.insertToMessages(message)
 	date_message = datetime.datetime.fromtimestamp(date).strftime('%d %b %Y %H:%M:%S')
 	message['id'] = str(message['_id'])
 	message['_id'] = ''
 	message['date'] = date_message
-	message['like'] = 0
+	message['like'] = message['like']
 	message['online'] = count_online
 	message['type'] = 'live'
 	
@@ -149,7 +150,23 @@ def comment(data, count_online):
 	return outmessage
 
 def likemess(data, count_online):
-	print(data)
+	like = Mongo.issetLike(data)
+	if (like == 0):
+		likes = Mongo.messageLike(data['msg_id'])
+		print(likes)
+		Mongo.setLikeComm(data['msg_id'], data['id'])
+	else:
+		likes = Mongo.minusMessagesLike(data['msg_id'])
+		Mongo.deleteCommentsLike(data)
+	print(likes)
+	outmessage = {}
+	outmessage['msg_id'] = data['msg_id']
+	outmessage['likes'] = likes
+	outmessage['employee_id'] = data['id']
+	outmessage['type'] = 'likemess'
+	outmessage['online'] = count_online
+
+	return outmessage
 
 def likecomm(data, count_online):
 	like = Mongo.issetLike(data)

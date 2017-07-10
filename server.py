@@ -81,6 +81,11 @@ class SocketServer(WebSocket):
 			for client in clients:
 				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'likemess':
+			result = json.dumps(responce)
+			for client in clients:
+				client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
 		if data['type'] == 'sound':
 			result = json.dumps(responce)
 			for client in clients:
