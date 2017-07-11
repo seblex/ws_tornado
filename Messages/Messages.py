@@ -33,10 +33,29 @@ def file(data):
 	return data
 
 def type_message(data):
-	return data
+
+	outmessage = {}
+
+	outmessage['type'] = data['type']
+	outmessage['event'] = data['event']
+	outmessage['user'] = data['iam']
+	outmessage['adresat'] = data['adresaten']
+
+	return outmessage
 
 def new_message(data):
-	return data
+
+	Mongo.setNewChatMessage(data)
+
+	outmessage = {}
+	outmessage['date'] = time.time()
+	outmessage['day'] = 'Тестовый'
+	outmessage['text'] = data['message']
+	outmessage['parent'] = data['user_id']
+	outmessage['user'] = data['user_id']
+	outmessage['type'] = 'new_message'
+
+	return outmessage
 
 def sounds(data):
 	query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
@@ -108,6 +127,7 @@ def first_messages(data, count_online):
 		message['id'] = str(mess['_id'])
 		message['isfile'] = mess['isfile']
 		message['annexes'] = mess['annexes']
+		message['like'] = mess['like']
 		outmessages.append(message)
 	count_messages = Mongo.getCountAllMessages()
 	outmessage = {}
@@ -207,6 +227,72 @@ def showComments(data, count_online):
 	outmessage['type'] = 'showComments'
 
 	return outmessage
+
+def allmess(data, count_online):
+
+	messages = Mongo.getChatMessages(data)
+
+	count = 0
+	now = time.time()
+	viewed_messages = {}
+
+	messages_res = []
+
+	for mess in messages:
+		count += 1
+		rd = now - mess['date']
+		if(rd > 86400):
+			if(rd < 172800):
+				day = 'Вчера'
+		else:
+			day = 'Сегодня'
+		mess['day'] = day
+		if(mess['viewed'] == 0):
+			mess['viewed_time'] = time.time()
+			Mongo.updateMessageVT(mess)
+
+		mess_id = str(mess['_id'])
+		viewed_messages[mess_id] = mess['viewed_time']
+		print(mess)
+		coll ={}
+		coll['date'] = mess['date']
+		coll['text'] = mess['text']
+		coll['parent_id'] = mess['parent_id']
+		coll['to_id'] = mess['to_id']
+		coll['isfile'] = mess['isfile']
+		coll['annexes'] = mess['annexes']
+		coll['viewed'] = mess['viewed']
+		coll['viewed_time'] = mess['viewed_time']
+		coll['id'] = str(mess['_id'])
+		coll['day'] = day
+		messages_res.append(coll)
+
+	if count == 25:
+		dop_flag = 'true'
+	else:
+		dop_flag = 'false'
+
+	print(messages)
+
+	outmessage = {}
+	outmessage['dop_flag'] = dop_flag
+	outmessage['viewed_message'] = viewed_messages
+	outmessage['messages'] = messages_res
+	outmessage['online'] = count_online
+	outmessage['type'] = 'mess'
+	outmessage['parent'] = data['iam']
+	outmessage['adresat'] = data['user_id']
+	outmessage['coune'] = data['count']
+
+	return outmessage
+
+def nullmess(data):
+
+	print(data)
+
+def plusdialog(data):
+
+	print(data)
 
 def dialog(data):
 	return data

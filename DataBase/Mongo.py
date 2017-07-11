@@ -1,4 +1,5 @@
 import pymongo
+import time
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -142,3 +143,36 @@ def minusMessagesLike(msg_id):
 	db.messages.save(message)
 
 	return message['like']
+
+def getChatMessages(data):
+	c = MongoClient()
+	db = c.ws_server
+
+	parent_id = data['iam']
+	to_id = data['user_id']
+
+	messages = db.messages.find({'parent_id': parent_id, 'to_id': to_id}).limit(25).sort('date', pymongo.DESCENDING)
+
+	return messages
+
+def setNewChatMessage(data):
+	c = MongoClient()
+	db = c.ws_server
+
+	coll = {}
+	coll['date'] = time.time()
+	coll['text'] = data['message']
+	coll['parent_id'] = data['user_id']
+	coll['to_id'] = data['adresaten']
+	coll['isfile'] = 'false'
+	coll['annexes'] = ''
+	coll['viewed'] = 0
+	coll['viewed_time'] = 0
+
+	db.messages.save(coll)
+
+def updateMessageVT(mess):
+	c = MongoClient()
+	db = c.ws_server
+
+	db.messages.save(mess)

@@ -21,6 +21,7 @@ class SocketServer(WebSocket):
 		#self.sendMessage(self.data)
 		# getting message
 		data = json.loads(self.data)
+		print(data['type'])
 		#getting users id and prefix
 		if clients[self] == 0:
 			user_id = data['iam']
@@ -91,6 +92,24 @@ class SocketServer(WebSocket):
 			for client in clients:
 				if (client != self): 
 					client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+		if data['type'] == 'type_message':
+			result = json.dumps(responce)
+			for client in clients:
+				if(clients[client] == int(data['adresaten'])):
+					client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + ' -responce')
+		if data['type'] == 'new_message':
+			result = json.dumps(responce)
+			for client in clients:
+				if(clients[client] == int(data['adresaten'])):
+					client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + ' -responce')
+		if data['type'] == 'allmess':
+			print(responce)
+			result = json.dumps(responce)
+			for client in clients:
+				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce')
 
     def handleConnected(self):

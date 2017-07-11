@@ -49,17 +49,23 @@ def route(data, count_online):
 	if(data['type'] == 'showComments'):
 		responce = Messages.showComments(data, count_online)
 
+	if(data['type'] == 'allmess'):
+		responce = Messages.allmess(data, count_online)
+
 	if(data['type'] == 'dialog'):
 		responce = Messages.dialog(data)
-
-	if(data['type'] == 'mess'):
-		responce = Messages.mess(data)
 
 	if(data['type'] == 'allusers'):
 		responce = Messages.allusers(data)
 
 	if(data['type'] == 'alldialogs'):
 		responce = Messages.alldialogs(data)
+
+	if(data['type'] == 'plusdialog'):
+		responce = Messages.plusdialog(data)
+
+	if(data['type'] == 'nullmess'):
+		responce = Messages.nullmess(data)
 
 	if(data['type'] == 'notice'):
 		responce = Messages.notice(data)
