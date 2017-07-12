@@ -59,7 +59,7 @@ def route(data, count_online):
 		responce = Messages.allusers(data)
 
 	if(data['type'] == 'alldialogs'):
-		responce = Messages.alldialogs(data)
+		responce = Messages.alldialogs(data, count_online)
 
 	if(data['type'] == 'plusdialog'):
 		responce = Messages.plusdialog(data)

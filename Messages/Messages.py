@@ -57,6 +57,9 @@ def new_message(data):
 
 	return outmessage
 
+def setDialog(data):
+	Mongo.setDialog(data)
+	
 def sounds(data):
 	query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
 	cur = MySQL.db_select(query)
@@ -90,7 +93,7 @@ def online(data, count_online):
 	responce = {}
 	responce['online'] = count_online
 	responce['type'] = 'online'
-	
+
 	return responce
 
 def live(data, count_online):
@@ -230,6 +233,8 @@ def showComments(data, count_online):
 
 def allmess(data, count_online):
 
+	print(data)
+
 	messages = Mongo.getChatMessages(data)
 
 	count = 0
@@ -253,7 +258,6 @@ def allmess(data, count_online):
 
 		mess_id = str(mess['_id'])
 		viewed_messages[mess_id] = mess['viewed_time']
-		print(mess)
 		coll ={}
 		coll['date'] = mess['date']
 		coll['text'] = mess['text']
@@ -272,8 +276,6 @@ def allmess(data, count_online):
 	else:
 		dop_flag = 'false'
 
-	print(messages)
-
 	outmessage = {}
 	outmessage['dop_flag'] = dop_flag
 	outmessage['viewed_message'] = viewed_messages
@@ -282,17 +284,16 @@ def allmess(data, count_online):
 	outmessage['type'] = 'mess'
 	outmessage['parent'] = data['iam']
 	outmessage['adresat'] = data['user_id']
-	outmessage['coune'] = data['count']
+	outmessage['count'] = data['count']
 
 	return outmessage
 
 def nullmess(data):
-
-	print(data)
-
+	Mongo.setNullCountDialogs(data)
+	
 def plusdialog(data):
 
-	print(data)
+	return data
 
 def dialog(data):
 	return data
@@ -352,13 +353,42 @@ def allusers(data):
 
 	return responce
 
-def alldialogs(data):
-	query = "SELECT * FROM `" + data['prefix'] + "dialogs` WHERE `adresat` = '" + data['user_id'] + "' AND `name` = 'NULL'"
-	result = MySQL.db_select(query)
-	for row in result:
-		print(row)
+def alldialogs(data, count_online):
 
-	#return data
+	dialogs = Mongo.getAllDialogs(data)
+
+	for dialog in dialogs:
+		parent = dialog['parent']
+		if(data['dialogs'].get(parent) != None):
+			data['dialogs']['parent'] = int(dialog['count']) + int(data['dialogs']['parent'])
+		else:
+			data['dialogs']['parent'] = dialog['count']
+
+	employees = getEmployeeCache()
+	all_employees = {}
+	config = Config.getRedisConfig()
+	for employee in employees:
+		r = redis.StrictRedis(host=config['host'], port=config['port'], db=config['db'])
+		result_e = json.loads(r.hget('employee', employee))
+		all_employees[result_e['id']] = result_e
+
+	users = []
+	emps = data['dialogs'].keys()
+
+	for employee in emps:
+		coll = {}
+		coll['id'] = employee
+		coll['avatar'] = all_employees[employee]['avatar']
+		coll['name'] = all_employees[employee]['firstname'] + ' ' + all_employees[employee]['lastname']
+		users.append(coll)
+	
+	outmessage = {}
+	outmessage['type'] = 'alldialogs'
+	outmessage['users'] = users
+	outmessage['dialogs'] = data['dialogs']
+	outmessage['online'] = count_online
+
+	return outmessage
 
 def notice(data):
 	return data

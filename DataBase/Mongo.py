@@ -176,3 +176,37 @@ def updateMessageVT(mess):
 	db = c.ws_server
 
 	db.messages.save(mess)
+
+def setDialog(data):
+	c = MongoClient()
+	db = c.ws_server
+
+	coll = {}
+	coll['parent'] = data['user_id']
+	coll['adresat'] = data['adresaten']
+
+	dialog = db.dialogs.find_one({'parent': data['user_id'], 'adresat': data['adresaten']})
+	if(dialog == None):
+		coll['count'] = 1
+		db.dialogs.save(coll)
+	else:
+		count = dialog['count']
+		dialog['count'] = count + 1
+		db.dialogs.save(dialog)
+
+def getAllDialogs(data):
+	c = MongoClient()
+	db = c.ws_server
+
+	dialogs = db.dialogs.find({'adresat': data['user_id']})
+
+	return dialogs
+
+def setNullCountDialogs(data):
+	c = MongoClient()
+	db = c.ws_server
+
+	dialog = db.dialogs.find_one({'adresat': data['adresaten'], 'parent': data['iam']})
+
+	dialog['count'] = 0
+	db.dialogs.save(dialog)
