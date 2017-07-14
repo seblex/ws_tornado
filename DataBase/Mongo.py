@@ -34,7 +34,7 @@ def getCountAllMessages():
 	c = MongoClient()
 	db = c.ws_server
 
-	count = db.messages.find({'to_id':0}).count()
+	count = db.messages.find({'to_id': '0'}).count()
 
 	return count
 
@@ -151,9 +151,17 @@ def getChatMessages(data):
 	parent_id = data['iam']
 	to_id = data['user_id']
 
-	messages = db.messages.find({'parent_id': parent_id, 'to_id': to_id}).limit(25).sort('date', pymongo.DESCENDING)
+	query = 'this.parent_id == "'+parent_id+'" || this.parent_id == "'+to_id+'"'
+	messages = db.messages.find().where(query).limit(25).sort('date', pymongo.DESCENDING)
+	mess_result = []
+	
+	for mess in messages:
+		if (mess['to_id'] == parent_id):
+			mess_result.append(mess)
+		if(mess['to_id'] == to_id):
+			mess_result.append(mess)	
 
-	return messages
+	return mess_result
 
 def setNewChatMessage(data):
 	c = MongoClient()
@@ -208,5 +216,73 @@ def setNullCountDialogs(data):
 
 	dialog = db.dialogs.find_one({'adresat': data['adresaten'], 'parent': data['iam']})
 
-	dialog['count'] = 0
-	db.dialogs.save(dialog)
+	if (dialog != None):
+		dialog['count'] = 0
+		db.dialogs.save(dialog)
+
+def delMessOnChat(data):
+	c = MongoClient()
+	db = c.ws_server
+	timestamp = str(data['timestamp'])
+	timestamp2 = float(timestamp)
+	
+	message = db.messages.find({'parent_id': data['employee_id'], 'to_id': data['dialoger'], 'text': data['message']})
+	timestamp_on = timestamp2 - 60
+	timestamp_off = timestamp2 + 60
+
+	for mess in message:
+		if(mess['date'] > timestamp_on):
+			if(mess['date'] < timestamp_off):
+				db.messages.remove(mess)
+
+	return False
+
+def setFileMessage(data):
+	c = MongoClient()
+	db = c.ws_server
+
+	coll = {}
+	coll['text'] = data['fileName']
+	coll['parent_id'] = data['user_id']
+	coll['to_id'] = data['adresat']
+	coll['date'] = time.time()
+	coll['isfile'] = 'true'
+	coll['annexes'] = ''
+	coll['members'] = 'all'
+	coll['like'] = 0
+
+	db.messages.save(coll)
+
+	new_mess = db.messages.find_one(coll)
+	
+	return str(new_mess['_id'])
+
+def setFileMessageFromChat(data):
+	c = MongoClient()
+	db = c.ws_server
+
+	coll = {}
+	coll['text'] = data['fileName']
+	coll['parent_id'] = data['user_id']
+	coll['to_id'] = data['adresaten']
+	coll['date'] = time.time()
+	coll['isfile'] = 'true'
+	coll['annexes'] = ''
+	coll['members'] = 'all'
+	coll['like'] = 0
+	coll['viewed'] = 0
+	coll['viewed_time'] = 0
+
+	db.messages.save(coll)
+
+	new_mess = db.messages.find_one(coll)
+	
+	return str(new_mess['_id'])
+
+def getEmployees(prefix):
+	c = MongoClient()
+	db = c.ws_server
+
+	employees = db.employees.find({'prefix': prefix})
+	
+	return employees

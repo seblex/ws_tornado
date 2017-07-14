@@ -130,14 +130,35 @@ class SocketServer(WebSocket):
 		
 		if data['type'] == 'allmess':
 			result = json.dumps(responce)
-			for client in clients:
-				client.sendMessage(u'' + result)
+			self.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce')
 		
 		if data['type'] == 'alldialogs':
 			result = json.dumps(responce)
 			self.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce')
+
+		if data['type'] == 'delMessOnChat':
+			result = json.dumps(responce)
+			self.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+
+		if data['type'] == 'filelive':
+			result = json.dumps(responce)
+			for client in clients:
+				client.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+
+		if data['type'] == 'file':
+			result = json.dumps(responce)
+			adresat_online = False
+			for client in clients:
+				if(clients[client] == int(data['adresaten'])):
+					client.sendMessage(u'' + result)
+					adresat_online = True
+			if(adresat_online == False):
+				Messages.setDialog(data)
+			Loger.logger(data['type'] + ' -responce')
 
     def handleConnected(self):
     	print(self.address, 'connected')

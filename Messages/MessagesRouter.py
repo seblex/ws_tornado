@@ -17,7 +17,7 @@ def route(data, count_online):
 		responce = Messages.filelive(data)
 
 	if(data['type'] == 'file'):
-		responce = Messages.file(data)
+		responce = Messages.file(data, count_online)
 
 	if(data['type'] == 'type_message'):
 		responce = Messages.type_message(data)
@@ -99,6 +99,9 @@ def route(data, count_online):
 
 	if(data['type'] == 'closeChat'):
 		responce = Messages.closeChat(data)
+
+	if(data['type'] == 'delMessOnChat'):
+		responce = Messages.delMessOnChat(data, count_online)
 
 	return responce
 

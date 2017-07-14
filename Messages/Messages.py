@@ -6,6 +6,8 @@ import pymysql
 import datetime
 import time
 import random
+import os
+import base64
 
 from Loger import Loger
 from Config import Config
@@ -24,13 +26,84 @@ def viewed_messages(data):
 	return data
 
 def annexesfiles(data):
-	return data
+	absp = '/var/www/mkrep/backend/web/ws_uploads'
+	if (os.path.exists(absp) == False):
+		os.mkdir(absp)
+	file = data['file'].split('base64');
+	filetext = file[1]
+	filetext1 = base64.b64decode(filetext)
+	path_to_file = absp + '/' + data['fileName'] 
+	if (os.path.exists(path_to_file) == False):
+		f = open(path_to_file, 'w')
+		f.write(filetext1)
+		f.close()
+		print('OK')
 
 def filelive(data):
-	return data
+	absp = '/var/www/mkrep/backend/web/ws_uploads'
+	if (os.path.exists(absp) == False):
+		os.mkdir(absp)
+	file = data['file'].split('base64');
+	mime = (file[0].split(':'))[1]
+	mimes = ['image/jpeg;', 'image/jpg;', 'image/png;']
+	for mm in mimes:
+		if (mm == mime):
+			filetext = file[1]
+			filetext1 = base64.b64decode(filetext)
+			path_to_file = absp + '/' + data['fileName'] 
+			if (os.path.exists(path_to_file) == False):
+				f = open(path_to_file, 'w')
+				f.write(filetext1)
+				f.close()
+				print('OK')
+			_id = Mongo.setFileMessage(data)
 
-def file(data):
-	return data
+			message = {}
+			message['text'] = data['fileName']
+			message['parent_id'] = data['user_id']
+			message['to_id'] = data['adresat']
+			message['date'] = time.time()
+			message['like'] = 0
+			message['isfile'] = 'true'
+			message['files'] = ''
+			message['id'] = _id
+			
+			outmessage = {}
+			outmessage['user'] = data['user_id']
+			outmessage['type'] = 'filelive'
+			outmessage['messages'] = message
+			
+			print(outmessage)	
+			return outmessage	
+
+def file(data, count_online):
+	absp = '/var/www/mkrep/backend/web/ws_uploads'
+	if (os.path.exists(absp) == False):
+		os.mkdir(absp)
+	file = data['file'].split('base64');
+	mime = (file[0].split(':'))[1]
+	#TO DO - add some formats
+	mimes = ['image/jpeg;', 'image/jpg;', 'image/png;']
+	for mm in mimes:
+		if (mm == mime):
+			filetext = file[1]
+			filetext1 = base64.b64decode(filetext)
+			path_to_file = absp + '/' + data['fileName'] 
+			if (os.path.exists(path_to_file) == False):
+				f = open(path_to_file, 'w')
+				f.write(filetext1)
+				f.close()
+				
+			_id = Mongo.setFileMessageFromChat(data)
+			
+			outmessage = {}
+			outmessage['user'] = data['user_id']
+			outmessage['type'] = 'file'
+			outmessage['fileName'] = data['fileName']
+			outmessage['parent'] = data['user_id']
+			outmessage['url'] = '/ws_uploads/' + data['fileName']
+			
+			return outmessage
 
 def type_message(data):
 
@@ -108,18 +181,18 @@ def live(data, count_online):
 	message['date'] = date
 	message['like'] = 0
 	new_mess_id = Mongo.insertToMessages(message)
-	date_message = datetime.datetime.fromtimestamp(date).strftime('%d %b %Y %H:%M:%S')
 	message['id'] = str(message['_id'])
 	message['_id'] = ''
-	message['date'] = date_message
+	message['date'] = date
 	message['like'] = message['like']
 	message['online'] = count_online
 	message['type'] = 'live'
-	
+
 	return json.dumps(message)
 
 def first_messages(data, count_online):
 	messages = Mongo.getFirstMessages()
+
 	outmessages = []
 	for mess in messages:
 		message = {}
@@ -176,12 +249,10 @@ def likemess(data, count_online):
 	like = Mongo.issetLike(data)
 	if (like == 0):
 		likes = Mongo.messageLike(data['msg_id'])
-		print(likes)
 		Mongo.setLikeComm(data['msg_id'], data['id'])
 	else:
 		likes = Mongo.minusMessagesLike(data['msg_id'])
 		Mongo.deleteCommentsLike(data)
-	print(likes)
 	outmessage = {}
 	outmessage['msg_id'] = data['msg_id']
 	outmessage['likes'] = likes
@@ -236,7 +307,6 @@ def allmess(data, count_online):
 	print(data)
 
 	messages = Mongo.getChatMessages(data)
-
 	count = 0
 	now = time.time()
 	viewed_messages = {}
@@ -302,13 +372,7 @@ def mess(data):
 	return data
 
 def allusers(data):
-	employees = getEmployeeCache()
-	all_employees = []
-	config = Config.getRedisConfig()
-	for employee in employees:
-		r = redis.StrictRedis(host=config['host'], port=config['port'], db=config['db'])
-		result_e = json.loads(r.hget('employee', employee))
-		all_employees.append(result_e)
+	all_employees = getEmployeeCache(data['prefix'])
 	
 	usr = []
 	subdivisions = {}
@@ -360,26 +424,24 @@ def alldialogs(data, count_online):
 	for dialog in dialogs:
 		parent = dialog['parent']
 		if(data['dialogs'].get(parent) != None):
-			data['dialogs']['parent'] = int(dialog['count']) + int(data['dialogs']['parent'])
+			data['dialogs'][parent] = int(dialog['count']) + int(data['dialogs'][parent])
 		else:
-			data['dialogs']['parent'] = dialog['count']
+			data['dialogs'][parent] = dialog['count']
+			
+	all_employees = getEmployeeCache(data['prefix'])
+	employees = {}
 
-	employees = getEmployeeCache()
-	all_employees = {}
-	config = Config.getRedisConfig()
-	for employee in employees:
-		r = redis.StrictRedis(host=config['host'], port=config['port'], db=config['db'])
-		result_e = json.loads(r.hget('employee', employee))
-		all_employees[result_e['id']] = result_e
+	for em in all_employees:
+		employees[em['id']] = em 
 
 	users = []
 	emps = data['dialogs'].keys()
 
 	for employee in emps:
 		coll = {}
-		coll['id'] = employee
-		coll['avatar'] = all_employees[employee]['avatar']
-		coll['name'] = all_employees[employee]['firstname'] + ' ' + all_employees[employee]['lastname']
+		coll['id'] = employees[employee]['id']
+		coll['avatar'] = employees[employee]['avatar']
+		coll['name'] = employees[employee]['firstname'] + ' ' + employees[employee]['lastname']
 		users.append(coll)
 	
 	outmessage = {}
@@ -438,8 +500,21 @@ def delmess(data, count_online):
 def closeChat(data):
 	return data
 
-def getEmployeeCache():
-	config = Config.getRedisConfig()
-	r = redis.StrictRedis(host=config['host'], port=config['port'], db=config['db'])
-	result = r.get('employee_id_list')
-	return json.loads(result)
+def delMessOnChat(data, count_online):
+	Mongo.delMessOnChat(data)
+
+	dat = {}
+	dat['count'] = 0;
+	dat['iam'] = data['employee_id']
+	dat['user_id'] = data['dialoger']
+	dat['adresat'] = 'user'
+	dat['prefix'] = data['prefix']
+	dat['type'] = 'allmess'
+
+	outmessage = allmess(dat, count_online)
+
+	return outmessage
+
+def getEmployeeCache(prefix):
+	employees = Mongo.getEmployees(prefix)
+	return employees
