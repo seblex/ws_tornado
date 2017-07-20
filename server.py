@@ -13,6 +13,9 @@ from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 from DataBase import MySQL
 from Loger import Loger
 from Messages import Messages, MessagesRouter
+from Config import Config
+import BaseHTTPServer, SimpleHTTPServer
+import ssl
 
 clients = {}
 class SocketServer(WebSocket):
@@ -160,6 +163,11 @@ class SocketServer(WebSocket):
 				Messages.setDialog(data)
 			Loger.logger(data['type'] + ' -responce')
 
+		if data['type'] == 'dopmess':
+			result = json.dumps(responce)
+			self.sendMessage(u'' + result)
+			Loger.logger(data['type'] + '-responce')
+
     def handleConnected(self):
     	print(self.address, 'connected')
     	clients[self] = 0;
@@ -168,8 +176,9 @@ class SocketServer(WebSocket):
     	del clients[self]
     	print(self.address, 'closed')
 
-
-
-
-server = SimpleWebSocketServer('', 8095, SocketServer)
+port = Config.getPort()
+server = SimpleWebSocketServer('', port, SocketServer)
 server.serveforever()
+#httpd = BaseHTTPServer.HTTPServer(('', port), SimpleHTTPServer.SimpleHTTPRequestHandler)
+#httpd.socket = ssl.wrap_socket(httpd.socket, server_side=True, certfile='./cert.pem', keyfile='./cert.pem', ssl_version=ssl.PROTOCOL_TLSv1)
+#httpd.serve_forever()

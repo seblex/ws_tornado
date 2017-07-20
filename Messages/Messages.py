@@ -26,7 +26,7 @@ def viewed_messages(data):
 	return data
 
 def annexesfiles(data):
-	absp = '/var/www/mkrep/backend/web/ws_uploads'
+	absp = Config.getFilePath()
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');
@@ -40,7 +40,7 @@ def annexesfiles(data):
 		print('OK')
 
 def filelive(data):
-	absp = '/var/www/mkrep/backend/web/ws_uploads'
+	absp = Config.getFilePath()
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');
@@ -77,7 +77,7 @@ def filelive(data):
 			return outmessage	
 
 def file(data, count_online):
-	absp = '/var/www/mkrep/backend/web/ws_uploads'
+	absp = Config.getFilePath()
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');
@@ -153,6 +153,7 @@ def sounds(data):
 	responce['type'] = 'sounds'
 	responce['sounds'] = sounds
 
+	print(responce)
 	return responce
 
 def sound(data):
@@ -304,17 +305,17 @@ def showComments(data, count_online):
 
 def allmess(data, count_online):
 
-	print(data)
-
 	messages = Mongo.getChatMessages(data)
-	count = 0
+	count = Mongo.getCountAllChatMessages(data)
 	now = time.time()
 	viewed_messages = {}
 
 	messages_res = []
 
+	count_messages = 0
+
 	for mess in messages:
-		count += 1
+		count_messages += 1
 		rd = now - mess['date']
 		if(rd > 86400):
 			if(rd < 172800):
@@ -341,10 +342,12 @@ def allmess(data, count_online):
 		coll['day'] = day
 		messages_res.append(coll)
 
-	if count == 25:
+	if count_messages == 25:
 		dop_flag = 'true'
 	else:
 		dop_flag = 'false'
+
+	messages_res.reverse()
 
 	outmessage = {}
 	outmessage['dop_flag'] = dop_flag
@@ -366,9 +369,6 @@ def plusdialog(data):
 	return data
 
 def dialog(data):
-	return data
-
-def mess(data):
 	return data
 
 def allusers(data):
@@ -453,10 +453,24 @@ def alldialogs(data, count_online):
 	return outmessage
 
 def notice(data):
+
+	user_id = data['address'];
+
+
+
 	return data
 
 def onlineNotice(data):
-	return data
+	mtype = data['type']
+	outmessage = {}
+	outmessage['type'] = mtype
+	message = {}
+	message['title'] = data['title']
+	message['description'] = data['description']
+	message['link'] = data['link']
+	outmessage['message'] = message 
+
+	return outmessage
 
 def offer(data):
 	return data
@@ -474,7 +488,61 @@ def hangup(data):
 	return data
 
 def dopmess(data):
-	return data
+	messages = Mongo.getDopMessageForChat(data)
+	dop_flag = 0
+	viewed_messages = {}
+	mess_2 = []
+	now = time.time()
+	for mess in messages:
+		dop_flag += 1
+		rd = now - mess['date']
+		if(rd > 86400):
+			if(rd < 172800):
+				day = 'Вчера'
+		else:
+			day = 'Сегодня'
+		mess['day'] = day
+		if(mess['viewed'] == 0):
+			mess['viewed_time'] = time.time()
+			Mongo.updateMessageVT(mess)
+		else:
+			mess['viewed_time'] = 0 
+
+		mess_to_client = {}
+		mess_to_client['viewed_time'] = mess['viewed_time']
+		mess_to_client['text'] = mess['text']
+		mess_to_client['day'] = mess['day']
+		mess_to_client['to_id'] = mess['to_id']
+		mess_to_client['id'] = str(mess['_id'])
+		mess_to_client['parent_id'] = mess['parent_id']
+		mess_to_client['date'] = mess['date']
+		mess_to_client['isfile'] = mess['isfile']
+		mess_to_client['annexes'] = mess['annexes']
+		mess_to_client['viewed'] = mess['viewed']
+		
+		mess_2.append(mess_to_client)
+
+		mess_id = str(mess['_id'])
+		viewed_messages[mess_id] = mess['viewed_time']
+
+	if(dop_flag == 25):
+		dop_flag = 'true'
+	else:
+		dop_flag = 'false'	
+
+	#mess_2.reverse()
+
+	outmessage = {}
+	outmessage['dop_flag'] = dop_flag
+	outmessage['viewed_messages'] = viewed_messages
+	outmessage['messages'] = mess_2
+	outmessage['type'] = 'dopmess'
+	outmessage['adresat'] = data['user_id']
+	outmessage['parent'] = data['iam']
+	outmessage['count'] = data['count']
+
+	return outmessage
+
 
 def delComm(data, count_online):
 
@@ -501,7 +569,7 @@ def closeChat(data):
 	return data
 
 def delMessOnChat(data, count_online):
-	Mongo.delMessOnChat(data)
+	mess_id = Mongo.delMessOnChat(data)
 
 	dat = {}
 	dat['count'] = 0;
@@ -511,7 +579,19 @@ def delMessOnChat(data, count_online):
 	dat['prefix'] = data['prefix']
 	dat['type'] = 'allmess'
 
-	outmessage = allmess(dat, count_online)
+	outmessage = {}
+
+	outmessage['type'] = 'delMessOnChat'
+	outmessage['mess_id'] = mess_id
+
+	#outmessage = allmess(dat, count_online)
+
+	#print(outmessage['messages'])
+	#messages_list = outmessage['messages']
+	#messages_list.reverse()
+	#outmessage['messages'] = messages_list
+	#print(outmessage['messages'])
+	#outmessage = outmessage.reverse()
 
 	return outmessage
 

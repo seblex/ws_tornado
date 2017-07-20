@@ -3,10 +3,11 @@ import time
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from Config import Config
 
 def insertToMessages(coll):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 	
 	db.messages.save(coll)
 
@@ -16,7 +17,7 @@ def insertToMessages(coll):
 
 def deleteMessage(mess_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	mess = db.messages.find_one({'_id': ObjectId(mess_id)})
 	
@@ -24,7 +25,7 @@ def deleteMessage(mess_id):
 
 def getFirstMessages():
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	messages = db.messages.find({'to_id': '0'}).limit(10).sort('date',pymongo.DESCENDING)
 
@@ -32,21 +33,33 @@ def getFirstMessages():
 
 def getCountAllMessages():
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	count = db.messages.find({'to_id': '0'}).count()
 
 	return count
 
+def getCountAllChatMessages(data):
+	c = MongoClient()
+	db = Config.getMongoDB(c)
+
+	parent_id = data['iam']
+	to_id = data['user_id']
+
+	query = 'this.parent_id == "'+parent_id+'" || this.parent_id == "'+to_id+'"'
+	count = db.messages.find().where(query).count()
+
+	return count
+
 def insertNewComment(coll):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	db.comments.save(coll)
 
 def getComments(msg_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	comments = db.comments.find({'msg_id': msg_id}).limit(8).sort('date', pymongo.DESCENDING)
 
@@ -54,7 +67,7 @@ def getComments(msg_id):
 
 def delComm(msg_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	comm = db.comments.find_one({'_id': ObjectId(msg_id)})
 	
@@ -62,7 +75,7 @@ def delComm(msg_id):
 
 def issetLike(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	employee_id = data['id']
 	message_id = data['msg_id']
@@ -78,7 +91,7 @@ def issetLike(data):
 
 def commentLike(msg_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	comment = db.comments.find_one({'_id': ObjectId(msg_id)})
 	
@@ -90,7 +103,7 @@ def commentLike(msg_id):
 
 def setLikeComm(msg_id, e_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	coll = {}
 	coll['employee_id'] = e_id
@@ -100,7 +113,7 @@ def setLikeComm(msg_id, e_id):
 
 def minusCommentsLike(msg_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	comment = db.comments.find_one({'_id': ObjectId(msg_id)})
 
@@ -112,7 +125,7 @@ def minusCommentsLike(msg_id):
 
 def deleteCommentsLike(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	employee_id = data['id']
 	message_id = data['msg_id']
@@ -122,7 +135,7 @@ def deleteCommentsLike(data):
 
 def messageLike(msg_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	message = db.messages.find_one({'_id': ObjectId(msg_id)})
 	
@@ -134,7 +147,7 @@ def messageLike(msg_id):
 
 def minusMessagesLike(msg_id):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	message = db.messages.find_one({'_id': ObjectId(msg_id)})
 
@@ -146,13 +159,12 @@ def minusMessagesLike(msg_id):
 
 def getChatMessages(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	parent_id = data['iam']
 	to_id = data['user_id']
 
-	query = 'this.parent_id == "'+parent_id+'" || this.parent_id == "'+to_id+'"'
-	messages = db.messages.find().where(query).limit(25).sort('date', pymongo.DESCENDING)
+	messages = db.messages.find({"$or":[{"$and": [{"parent_id": parent_id},{"to_id": to_id}]},{"$and": [{"parent_id": to_id},{"to_id": parent_id}]}]}).limit(25).sort('date', pymongo.DESCENDING)
 	mess_result = []
 	
 	for mess in messages:
@@ -165,7 +177,7 @@ def getChatMessages(data):
 
 def setNewChatMessage(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	coll = {}
 	coll['date'] = time.time()
@@ -181,13 +193,13 @@ def setNewChatMessage(data):
 
 def updateMessageVT(mess):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	db.messages.save(mess)
 
 def setDialog(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	coll = {}
 	coll['parent'] = data['user_id']
@@ -204,15 +216,15 @@ def setDialog(data):
 
 def getAllDialogs(data):
 	c = MongoClient()
-	db = c.ws_server
-
+	db = Config.getMongoDB(c)
+	
 	dialogs = db.dialogs.find({'adresat': data['user_id']})
 
 	return dialogs
 
 def setNullCountDialogs(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	dialog = db.dialogs.find_one({'adresat': data['adresaten'], 'parent': data['iam']})
 
@@ -222,7 +234,7 @@ def setNullCountDialogs(data):
 
 def delMessOnChat(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 	timestamp = str(data['timestamp'])
 	timestamp2 = float(timestamp)
 	
@@ -230,16 +242,19 @@ def delMessOnChat(data):
 	timestamp_on = timestamp2 - 60
 	timestamp_off = timestamp2 + 60
 
+	mess_id = 0
+
 	for mess in message:
 		if(mess['date'] > timestamp_on):
 			if(mess['date'] < timestamp_off):
 				db.messages.remove(mess)
+				mess_id = str(mess['_id'])
 
-	return False
+	return mess_id
 
 def setFileMessage(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	coll = {}
 	coll['text'] = data['fileName']
@@ -259,7 +274,7 @@ def setFileMessage(data):
 
 def setFileMessageFromChat(data):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	coll = {}
 	coll['text'] = data['fileName']
@@ -281,8 +296,20 @@ def setFileMessageFromChat(data):
 
 def getEmployees(prefix):
 	c = MongoClient()
-	db = c.ws_server
+	db = Config.getMongoDB(c)
 
 	employees = db.employees.find({'prefix': prefix})
 	
 	return employees
+
+def getDopMessageForChat(data):
+	c = MongoClient()
+	db = Config.getMongoDB(c)
+
+	me = str(data['iam'])
+	user_id = str(data['user_id'])
+	count_from = data['count'] * 25
+	
+	messages = db.messages.find({"$or":[{"$and": [{"parent_id": me},{"to_id": user_id}]},{"$and": [{"parent_id": user_id},{"to_id": me}]}]}).skip(count_from).limit(25).sort('date', pymongo.DESCENDING)
+	
+	return messages
