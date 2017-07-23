@@ -6,8 +6,10 @@ from bson.objectid import ObjectId
 from Config import Config
 
 def insertToMessages(coll):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 	
 	db.messages.save(coll)
 
@@ -16,32 +18,41 @@ def insertToMessages(coll):
 	return new_mess['_id']
 
 def deleteMessage(mess_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	mess = db.messages.find_one({'_id': ObjectId(mess_id)})
 	
 	db.messages.remove(mess)
 
 def getFirstMessages():
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
+	#db.authenticate('', '', source='ws_server')
 
 	messages = db.messages.find({'to_id': '0'}).limit(10).sort('date',pymongo.DESCENDING)
 
 	return messages
 
 def getCountAllMessages():
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	count = db.messages.find({'to_id': '0'}).count()
 
 	return count
 
 def getCountAllChatMessages(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	parent_id = data['iam']
 	to_id = data['user_id']
@@ -52,30 +63,38 @@ def getCountAllChatMessages(data):
 	return count
 
 def insertNewComment(coll):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	db.comments.save(coll)
 
 def getComments(msg_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	comments = db.comments.find({'msg_id': msg_id}).limit(8).sort('date', pymongo.DESCENDING)
 
 	return comments
 
 def delComm(msg_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	comm = db.comments.find_one({'_id': ObjectId(msg_id)})
 	
 	db.comments.remove(comm)
 
 def issetLike(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	employee_id = data['id']
 	message_id = data['msg_id']
@@ -90,8 +109,10 @@ def issetLike(data):
 	return like
 
 def commentLike(msg_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	comment = db.comments.find_one({'_id': ObjectId(msg_id)})
 	
@@ -102,8 +123,10 @@ def commentLike(msg_id):
 	return comment['like']
 
 def setLikeComm(msg_id, e_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	coll = {}
 	coll['employee_id'] = e_id
@@ -112,8 +135,10 @@ def setLikeComm(msg_id, e_id):
 	db.likes.save(coll)
 
 def minusCommentsLike(msg_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	comment = db.comments.find_one({'_id': ObjectId(msg_id)})
 
@@ -124,8 +149,10 @@ def minusCommentsLike(msg_id):
 	return comment['like']
 
 def deleteCommentsLike(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	employee_id = data['id']
 	message_id = data['msg_id']
@@ -134,8 +161,10 @@ def deleteCommentsLike(data):
 	db.likes.remove(like)
 
 def messageLike(msg_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	message = db.messages.find_one({'_id': ObjectId(msg_id)})
 	
@@ -146,8 +175,10 @@ def messageLike(msg_id):
 	return message['like']
 
 def minusMessagesLike(msg_id):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	message = db.messages.find_one({'_id': ObjectId(msg_id)})
 
@@ -158,8 +189,10 @@ def minusMessagesLike(msg_id):
 	return message['like']
 
 def getChatMessages(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	parent_id = data['iam']
 	to_id = data['user_id']
@@ -176,8 +209,10 @@ def getChatMessages(data):
 	return mess_result
 
 def setNewChatMessage(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	coll = {}
 	coll['date'] = time.time()
@@ -192,14 +227,18 @@ def setNewChatMessage(data):
 	db.messages.save(coll)
 
 def updateMessageVT(mess):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	db.messages.save(mess)
 
 def setDialog(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	coll = {}
 	coll['parent'] = data['user_id']
@@ -215,16 +254,20 @@ def setDialog(data):
 		db.dialogs.save(dialog)
 
 def getAllDialogs(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
-	
+	db.authenticate(auth_info['user'], auth_info['password'])
+
 	dialogs = db.dialogs.find({'adresat': data['user_id']})
 
 	return dialogs
 
 def setNullCountDialogs(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	dialog = db.dialogs.find_one({'adresat': data['adresaten'], 'parent': data['iam']})
 
@@ -233,8 +276,11 @@ def setNullCountDialogs(data):
 		db.dialogs.save(dialog)
 
 def delMessOnChat(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
+
 	timestamp = str(data['timestamp'])
 	timestamp2 = float(timestamp)
 	
@@ -253,8 +299,10 @@ def delMessOnChat(data):
 	return mess_id
 
 def setFileMessage(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	coll = {}
 	coll['text'] = data['fileName']
@@ -273,8 +321,10 @@ def setFileMessage(data):
 	return str(new_mess['_id'])
 
 def setFileMessageFromChat(data):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	coll = {}
 	coll['text'] = data['fileName']
@@ -295,16 +345,30 @@ def setFileMessageFromChat(data):
 	return str(new_mess['_id'])
 
 def getEmployees(prefix):
-	c = MongoClient()
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	employees = db.employees.find({'prefix': prefix})
-	
+
 	return employees
 
-def getDopMessageForChat(data):
-	c = MongoClient()
+def getEmployee(prefix, _id):
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
+
+	employee = db.employees.find({'prefix': prefix, 'id': _id})
+
+	return employee
+
+def getDopMessageForChat(data):
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
+	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
 
 	me = str(data['iam'])
 	user_id = str(data['user_id'])
@@ -313,3 +377,31 @@ def getDopMessageForChat(data):
 	messages = db.messages.find({"$or":[{"$and": [{"parent_id": me},{"to_id": user_id}]},{"$and": [{"parent_id": user_id},{"to_id": me}]}]}).skip(count_from).limit(25).sort('date', pymongo.DESCENDING)
 	
 	return messages
+
+def getNotices():
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
+	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
+
+	notices = db.notices.find()
+
+	return notices
+
+def deleteNotice(notice):
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
+	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
+
+	db.notices.remove(notice)
+
+def setLog(log):
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
+	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
+	
+	coll = {}
+	coll['log'] = log
+	db.logs.save(coll)

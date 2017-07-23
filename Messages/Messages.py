@@ -13,6 +13,7 @@ from Loger import Loger
 from Config import Config
 from DataBase import MySQL
 from DataBase import Mongo
+from Notices import Notices
 
 #responce 'ping'
 def ping(data):
@@ -37,7 +38,7 @@ def annexesfiles(data):
 		f = open(path_to_file, 'w')
 		f.write(filetext1)
 		f.close()
-		print('OK')
+		#print('OK')
 
 def filelive(data):
 	absp = Config.getFilePath()
@@ -55,7 +56,7 @@ def filelive(data):
 				f = open(path_to_file, 'w')
 				f.write(filetext1)
 				f.close()
-				print('OK')
+				#print('OK')
 			_id = Mongo.setFileMessage(data)
 
 			message = {}
@@ -73,7 +74,6 @@ def filelive(data):
 			outmessage['type'] = 'filelive'
 			outmessage['messages'] = message
 			
-			print(outmessage)	
 			return outmessage	
 
 def file(data, count_online):
@@ -84,26 +84,26 @@ def file(data, count_online):
 	mime = (file[0].split(':'))[1]
 	#TO DO - add some formats
 	mimes = ['image/jpeg;', 'image/jpg;', 'image/png;']
-	for mm in mimes:
-		if (mm == mime):
-			filetext = file[1]
-			filetext1 = base64.b64decode(filetext)
-			path_to_file = absp + '/' + data['fileName'] 
-			if (os.path.exists(path_to_file) == False):
-				f = open(path_to_file, 'w')
-				f.write(filetext1)
-				f.close()
+	#for mm in mimes:
+	#	if (mm == mime):
+	filetext = file[1]
+	filetext1 = base64.b64decode(filetext)
+	path_to_file = absp + '/' + data['fileName'] 
+	if (os.path.exists(path_to_file) == False):
+		f = open(path_to_file, 'w')
+		f.write(filetext1)
+		f.close()
 				
-			_id = Mongo.setFileMessageFromChat(data)
+	_id = Mongo.setFileMessageFromChat(data)
 			
-			outmessage = {}
-			outmessage['user'] = data['user_id']
-			outmessage['type'] = 'file'
-			outmessage['fileName'] = data['fileName']
-			outmessage['parent'] = data['user_id']
-			outmessage['url'] = '/ws_uploads/' + data['fileName']
+	outmessage = {}
+	outmessage['user'] = data['user_id']
+	outmessage['type'] = 'file'
+	outmessage['fileName'] = data['fileName']
+	outmessage['parent'] = data['user_id']
+	outmessage['url'] = '/ws_uploads/' + data['fileName']
 			
-			return outmessage
+	return outmessage
 
 def type_message(data):
 
@@ -122,7 +122,7 @@ def new_message(data):
 
 	outmessage = {}
 	outmessage['date'] = time.time()
-	outmessage['day'] = 'Тестовый'
+	outmessage['day'] = 'Сегодня'
 	outmessage['text'] = data['message']
 	outmessage['parent'] = data['user_id']
 	outmessage['user'] = data['user_id']
@@ -153,7 +153,6 @@ def sounds(data):
 	responce['type'] = 'sounds'
 	responce['sounds'] = sounds
 
-	print(responce)
 	return responce
 
 def sound(data):
@@ -373,7 +372,7 @@ def dialog(data):
 
 def allusers(data):
 	all_employees = getEmployeeCache(data['prefix'])
-	
+
 	usr = []
 	subdivisions = {}
 	count_users = 0
@@ -429,6 +428,7 @@ def alldialogs(data, count_online):
 			data['dialogs'][parent] = dialog['count']
 			
 	all_employees = getEmployeeCache(data['prefix'])
+
 	employees = {}
 
 	for em in all_employees:
@@ -436,14 +436,17 @@ def alldialogs(data, count_online):
 
 	users = []
 	emps = data['dialogs'].keys()
-
+	
 	for employee in emps:
 		coll = {}
+		employee = int(employee)
 		coll['id'] = employees[employee]['id']
 		coll['avatar'] = employees[employee]['avatar']
 		coll['name'] = employees[employee]['firstname'] + ' ' + employees[employee]['lastname']
 		users.append(coll)
 	
+
+
 	outmessage = {}
 	outmessage['type'] = 'alldialogs'
 	outmessage['users'] = users
@@ -530,8 +533,6 @@ def dopmess(data):
 	else:
 		dop_flag = 'false'	
 
-	#mess_2.reverse()
-
 	outmessage = {}
 	outmessage['dop_flag'] = dop_flag
 	outmessage['viewed_messages'] = viewed_messages
@@ -583,15 +584,6 @@ def delMessOnChat(data, count_online):
 
 	outmessage['type'] = 'delMessOnChat'
 	outmessage['mess_id'] = mess_id
-
-	#outmessage = allmess(dat, count_online)
-
-	#print(outmessage['messages'])
-	#messages_list = outmessage['messages']
-	#messages_list.reverse()
-	#outmessage['messages'] = messages_list
-	#print(outmessage['messages'])
-	#outmessage = outmessage.reverse()
 
 	return outmessage
 

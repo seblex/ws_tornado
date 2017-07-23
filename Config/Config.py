@@ -24,6 +24,14 @@ def getMongoDB(c):
 
 	return db
 
+def getMongoAuthInfo():
+	auth_info = {}
+	auth_info['user'] = 'admin'
+	auth_info['password'] = 'admin'
+	auth_info['server'] = '127.0.0.1'
+
+	return auth_info
+
 #link to file directory
 def getFilePath():
 	filePath = '/var/www/mkrep/backend/web/ws_uploads' #absolute path to directory with files
@@ -33,3 +41,13 @@ def getFilePath():
 def getPort():
 	port = 8095
 	return port
+
+#SMTP settings
+def getSMTPconfig():
+	smtp = {}
+	smtp['server'] = "smtp.gmail.com"
+	smtp['port'] = 25
+	smtp['user_name'] = "support.tonics@gmail.com"
+	smtp['user_passwd'] = "password"
+
+	return smtp
