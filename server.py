@@ -30,7 +30,6 @@ class SocketServer(WebSocket):
 			user_id = data['iam']
 			prefix = data['prefix']
 			employee_id = Mongo.getEmployeeId(prefix, user_id)
-			print(employee_id)
 			clients[self] = employee_id
 
 		count_online = len(clients)	

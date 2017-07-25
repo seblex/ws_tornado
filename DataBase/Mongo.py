@@ -373,9 +373,8 @@ def getEmployeeId(prefix, user_id):
 	employee = db.employees.find({'prefix': prefix, 'user_id': user_id})
 	
 	for emp in employee:
-		print(emp)
 		employee_id = emp['id']
-		print(emp['id'])
+
 	return employee_id
 
 def getDopMessageForChat(data):
