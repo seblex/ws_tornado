@@ -29,7 +29,8 @@ class SocketServer(WebSocket):
 		if clients[self] == 0:
 			user_id = data['iam']
 			prefix = data['prefix']
-			employee_id = MySQL.get_employee_id(user_id, prefix)
+			employee_id = Mongo.getEmployeeId(prefix, user_id)
+			print(employee_id)
 			clients[self] = employee_id
 
 		count_online = len(clients)	

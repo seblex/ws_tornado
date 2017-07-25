@@ -364,6 +364,20 @@ def getEmployee(prefix, _id):
 
 	return employee
 
+def getEmployeeId(prefix, user_id):
+	auth_info = Config.getMongoAuthInfo()
+	c = MongoClient(auth_info['server'])
+	db = Config.getMongoDB(c)
+	db.authenticate(auth_info['user'], auth_info['password'])
+	user_id = int(user_id)
+	employee = db.employees.find({'prefix': prefix, 'user_id': user_id})
+	
+	for emp in employee:
+		print(emp)
+		employee_id = emp['id']
+		print(emp['id'])
+	return employee_id
+
 def getDopMessageForChat(data):
 	auth_info = Config.getMongoAuthInfo()
 	c = MongoClient(auth_info['server'])
@@ -401,7 +415,7 @@ def setLog(log):
 	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c)
 	db.authenticate(auth_info['user'], auth_info['password'])
-	
+
 	coll = {}
 	coll['log'] = log
 	db.logs.save(coll)
