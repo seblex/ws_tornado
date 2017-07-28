@@ -1,7 +1,6 @@
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 certifi==2017.4.17
-pkg-resources==0.0.0
 pymongo==3.2.1
 PyMySQL==0.7.11
 redis==2.10.5

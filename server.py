@@ -17,237 +17,236 @@ from Config import Config
 import BaseHTTPServer, SimpleHTTPServer
 
 clients = {}
+
+
 class SocketServer(WebSocket):
-
     def handleMessage(self):
-		#self.sendMessage(self.data)
-		# getting message
-		data = json.loads(self.data)
-		#print(data)
-		Loger.logger(data['type'], str(self.address))
-		#getting users id and prefix
-		if clients[self] == 0:
-			user_id = data['iam']
-			prefix = data['prefix']
-			employee_id = Mongo.getEmployeeId(prefix, user_id)
-			clients[self] = employee_id
+        # self.sendMessage(self.data)
+        # getting message
+        data = json.loads(self.data)
+        # print(data)
+        Loger.logger(data['type'], str(self.address))
+        # getting users id and prefix
+        if clients[self] == 0:
+            user_id = data['iam']
+            prefix = data['prefix']
+            employee_id = Mongo.getEmployeeId(prefix, user_id)
+            clients[self] = employee_id
 
-		count_online = len(clients)	
+        count_online = len(clients)
 
-		responce = MessagesRouter.route(data, count_online)
-		#send responce
-		if data['type'] == 'ping':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'online':
-			users = []
-			for client in clients:
-				users.append(clients[client])
-			responce['users'] = users
-			result = json.dumps(responce)
-			for client in clients:
-				client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'allusers':
-			responce['online'] = count_online
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'sounds':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'live':
-			for client in clients:
-				client.sendMessage(u'' + responce)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'delMess':
-			result = json.dumps(responce)
-			for client in clients:
-				client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'firstMessages':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'comment':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'showComments':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'delComm':
-			result = json.dumps(responce)
-			for client in clients:
-				client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'likecomm':
-			result = json.dumps(responce)
-			for client in clients:
-				client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'likemess':
-			result = json.dumps(responce)
-			for client in clients:
-				client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'sound':
-			result = json.dumps(responce)
-			for client in clients:
-				if (client != self): 
-					client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'type_message':
-			result = json.dumps(responce)
-			for client in clients:
-				if(clients[client] == int(data['adresaten'])):
-					client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + ' -responce', str(self.address))
-		
-		if data['type'] == 'new_message':
-			result = json.dumps(responce)
-			adresat_online = False
-			for client in clients:
-				if(clients[client] == int(data['adresaten'])):
-					client.sendMessage(u'' + result)
-					adresat_online = True
-			if(adresat_online == False):
-				Messages.setDialog(data)
-			Loger.logger(data['type'] + ' -responce', str(self.address))
-		
-		if data['type'] == 'allmess':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
-		
-		if data['type'] == 'alldialogs':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
+        responce = MessagesRouter.route(data, count_online)
+        # send responce
+        if data['type'] == 'ping':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'delMessOnChat':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
+        if data['type'] == 'online':
+            users = []
+            for client in clients:
+                users.append(clients[client])
+            responce['users'] = users
+            result = json.dumps(responce)
+            for client in clients:
+                client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'filelive':
-			result = json.dumps(responce)
-			for client in clients:
-				client.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
+        if data['type'] == 'allusers':
+            responce['online'] = count_online
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'file':
-			result = json.dumps(responce)
-			adresat_online = False
-			for client in clients:
-				if(clients[client] == int(data['adresaten'])):
-					client.sendMessage(u'' + result)
-					adresat_online = True
-			if(adresat_online == False):
-				Messages.setDialog(data)
-			Loger.logger(data['type'] + ' -responce', str(self.address))
+        if data['type'] == 'sounds':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'dopmess':
-			result = json.dumps(responce)
-			self.sendMessage(u'' + result)
-			Loger.logger(data['type'] + '-responce', str(self.address))
+        if data['type'] == 'live':
+            for client in clients:
+                client.sendMessage(u'' + responce)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'onlineNotice':
-			action = False
-			query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
-			cur = MySQL.db_select(query)
-			for row in cur:
-				if data['type_notice'] == 'mess_on_live':
-					if row[2] == 1:
-						action = True
-				if data['type_notice'] == 'like_on_live':
-					if row[4] == 1:
-						action = True
-				if data['type_notice'] == 'comm_on_live':
-					if row[3] == 1:
-						action = True
-			if action == True:	
-				result = json.dumps(responce)
-				for client in clients:
-					if (client != self): 
-						client.sendMessage(u'' + result)
-				Loger.logger(data['type'] + '-responce', str(self.address))
+        if data['type'] == 'delMess':
+            result = json.dumps(responce)
+            for client in clients:
+                client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'offer':
-			for client in clients:
-				client.sendMessage(u'' + json.dumps(data['desc']))
+        if data['type'] == 'firstMessages':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'answer':
-			for client in clients:
-				client.sendMessage(u'' + json.dumps(data['desc']))
+        if data['type'] == 'comment':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'ice1':
-			for client in clients:
-				client.sendMessage(u'' + json.dumps(data['desc']))
+        if data['type'] == 'showComments':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'ice2':
-			for client in clients:
-				client.sendMessage(u'' + json.dumps(data['desc']))
+        if data['type'] == 'delComm':
+            result = json.dumps(responce)
+            for client in clients:
+                client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		if data['type'] == 'hangup':
-			for client in clients:
-				client.sendMessage(u'' + json.dumps(data['desc']))
+        if data['type'] == 'likecomm':
+            result = json.dumps(responce)
+            for client in clients:
+                client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		notices = Mongo.getNotices()
+        if data['type'] == 'likemess':
+            result = json.dumps(responce)
+            for client in clients:
+                client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-		for notice in notices:
-			user_id = notice['addresat']
-			notice_type = 'onlineNotice'
-			outmessage = {}
-			outmessage['type'] = notice_type
-			mess = {}
-			if(notice['title'] != ''):
-				mess['title'] = notice['title']
-			else:
-				mess['title'] = u'Уведомление'
-			mess['description'] = notice['description']
-			mess['link'] = notice['link']
-			outmessage['message'] = mess
-			outmessage = json.dumps(outmessage)
+        if data['type'] == 'sound':
+            result = json.dumps(responce)
+            for client in clients:
+                if (client != self):
+                    client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
 
-			for client in clients:
-				if(clients[client] == int(user_id)):
-					client.sendMessage(u'' + outmessage)
-					Loger.logger('notice_from_queue' + '-responce', str(self.address))
-					Mongo.deleteNotice(notice)
+        if data['type'] == 'type_message':
+            result = json.dumps(responce)
+            for client in clients:
+                if (clients[client] == int(data['adresaten'])):
+                    client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + ' -responce', str(self.address))
+
+        if data['type'] == 'new_message':
+            result = json.dumps(responce)
+            adresat_online = False
+            for client in clients:
+                if (clients[client] == int(data['adresaten'])):
+                    client.sendMessage(u'' + result)
+                    adresat_online = True
+            if (adresat_online == False):
+                Messages.setDialog(data)
+            Loger.logger(data['type'] + ' -responce', str(self.address))
+
+        if data['type'] == 'allmess':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
+
+        if data['type'] == 'alldialogs':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
+
+        if data['type'] == 'delMessOnChat':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
+
+        if data['type'] == 'filelive':
+            result = json.dumps(responce)
+            for client in clients:
+                client.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
+
+        if data['type'] == 'file':
+            result = json.dumps(responce)
+            adresat_online = False
+            for client in clients:
+                if (clients[client] == int(data['adresaten'])):
+                    client.sendMessage(u'' + result)
+                    adresat_online = True
+            if (adresat_online == False):
+                Messages.setDialog(data)
+            Loger.logger(data['type'] + ' -responce', str(self.address))
+
+        if data['type'] == 'dopmess':
+            result = json.dumps(responce)
+            self.sendMessage(u'' + result)
+            Loger.logger(data['type'] + '-responce', str(self.address))
+
+        if data['type'] == 'onlineNotice':
+            action = False
+            query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
+            cur = MySQL.db_select(query)
+            for row in cur:
+                if data['type_notice'] == 'mess_on_live':
+                    if row[2] == 1:
+                        action = True
+                if data['type_notice'] == 'like_on_live':
+                    if row[4] == 1:
+                        action = True
+                if data['type_notice'] == 'comm_on_live':
+                    if row[3] == 1:
+                        action = True
+            if action == True:
+                result = json.dumps(responce)
+                for client in clients:
+                    if (client != self):
+                        client.sendMessage(u'' + result)
+                Loger.logger(data['type'] + '-responce', str(self.address))
+
+        if data['type'] == 'offer':
+            for client in clients:
+                client.sendMessage(u'' + json.dumps(data['desc']))
+
+        if data['type'] == 'answer':
+            for client in clients:
+                client.sendMessage(u'' + json.dumps(data['desc']))
+
+        if data['type'] == 'ice1':
+            for client in clients:
+                client.sendMessage(u'' + json.dumps(data['desc']))
+
+        if data['type'] == 'ice2':
+            for client in clients:
+                client.sendMessage(u'' + json.dumps(data['desc']))
+
+        if data['type'] == 'hangup':
+            for client in clients:
+                client.sendMessage(u'' + json.dumps(data['desc']))
+
+        notices = Mongo.getNotices()
+
+        for notice in notices:
+            user_id = notice['addresat']
+            notice_type = 'onlineNotice'
+            outmessage = {}
+            outmessage['type'] = notice_type
+            mess = {}
+            if (notice['title'] != ''):
+                mess['title'] = notice['title']
+            else:
+                mess['title'] = u'Уведомление'
+            mess['description'] = notice['description']
+            mess['link'] = notice['link']
+            outmessage['message'] = mess
+            outmessage = json.dumps(outmessage)
+
+            for client in clients:
+                if (clients[client] == int(user_id)):
+                    client.sendMessage(u'' + outmessage)
+                    Loger.logger('notice_from_queue' + '-responce', str(self.address))
+                    Mongo.deleteNotice(notice)
 
     def handleConnected(self):
-    	print(self.address, 'connected')
-    	Loger.logger('connected', str(self.address))
-    	clients[self] = 0;
-    	
-    def handleClose(self):
-    	del clients[self]
-    	Loger.logger('closed', str(self.address))
-    	print(self.address, 'closed')
+        print(self.address, 'connected')
+        Loger.logger('connected', str(self.address))
+        clients[self] = 0;
 
-    
+    def handleClose(self):
+        del clients[self]
+        Loger.logger('closed', str(self.address))
+        print(self.address, 'closed')
 
 
 port = Config.getPort()
 server = SimpleWebSocketServer('', port, SocketServer)
 server.serveforever()
-#httpd = BaseHTTPServer.HTTPServer(('', port), SimpleHTTPServer.SimpleHTTPRequestHandler)
-#httpd.socket = ssl.wrap_socket(httpd.socket, server_side=True, certfile='./cert.pem', keyfile='./cert.pem', ssl_version=ssl.PROTOCOL_TLSv1)
-#httpd.serve_forever()
+# httpd = BaseHTTPServer.HTTPServer(('', port), SimpleHTTPServer.SimpleHTTPRequestHandler)
+# httpd.socket = ssl.wrap_socket(httpd.socket, server_side=True, certfile='./cert.pem', keyfile='./cert.pem', ssl_version=ssl.PROTOCOL_TLSv1)
+# httpd.serve_forever()
