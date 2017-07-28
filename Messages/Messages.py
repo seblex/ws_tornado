@@ -319,13 +319,11 @@ def allmess(data, count_online):
 		if(rd > 86400):
 			if(rd < 172800):
 				day = 'Вчера'
+				mess['day'] = day
 		else:
 			day = 'Сегодня'
-		mess['day'] = day
-		if(mess['viewed'] == 0):
-			mess['viewed_time'] = time.time()
-			Mongo.updateMessageVT(mess)
-
+			mess['day'] = day
+		
 		mess_id = str(mess['_id'])
 		viewed_messages[mess_id] = mess['viewed_time']
 		coll ={}
@@ -336,9 +334,19 @@ def allmess(data, count_online):
 		coll['isfile'] = mess['isfile']
 		coll['annexes'] = mess['annexes']
 		coll['viewed'] = mess['viewed']
+		if(mess['viewed'] == 0):
+			mess['viewed_time'] = time.time()
+			Mongo.updateMessageVT(mess)
 		coll['viewed_time'] = mess['viewed_time']
 		coll['id'] = str(mess['_id'])
-		coll['day'] = day
+		day = 0
+		if(rd > 86400):
+			if(rd < 172800):
+				day = 'Вчера'
+				mess['day'] = day
+		else:
+			day = 'Сегодня'
+			mess['day'] = day
 		messages_res.append(coll)
 
 	if count_messages == 25:

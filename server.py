@@ -189,6 +189,26 @@ class SocketServer(WebSocket):
 						client.sendMessage(u'' + result)
 				Loger.logger(data['type'] + '-responce', str(self.address))
 
+		if data['type'] == 'offer':
+			for client in clients:
+				client.sendMessage(u'' + json.dumps(data['desc']))
+
+		if data['type'] == 'answer':
+			for client in clients:
+				client.sendMessage(u'' + json.dumps(data['desc']))
+
+		if data['type'] == 'ice1':
+			for client in clients:
+				client.sendMessage(u'' + json.dumps(data['desc']))
+
+		if data['type'] == 'ice2':
+			for client in clients:
+				client.sendMessage(u'' + json.dumps(data['desc']))
+
+		if data['type'] == 'hangup':
+			for client in clients:
+				client.sendMessage(u'' + json.dumps(data['desc']))
+
 		notices = Mongo.getNotices()
 
 		for notice in notices:
