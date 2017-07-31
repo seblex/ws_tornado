@@ -8,6 +8,7 @@ import tornado.httpserver
 import pymongo
 import socket
 import pymysql
+import pika
 
 from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
 from DataBase import MySQL, Mongo
@@ -15,9 +16,33 @@ from Loger import Loger
 from Messages import Messages, MessagesRouter
 from Config import Config
 import BaseHTTPServer, SimpleHTTPServer
+from threading import Thread
 
 clients = {}
 
+# Connecting to RabbitMQ Server
+amqp_conn = pika.BlockingConnection(pika.ConnectionParameters(
+	'localhost'))
+amqp_ch = amqp_conn.channel()
+
+def threaded_rmq():
+	# Declare && Listening for named queue
+	amqp_ch.queue_declare(queue="my_queue", durable=False)
+	#Loger.logger('consumer ready, on queue')
+	amqp_ch.basic_consume(callback, queue="my_queue", no_ack=True)
+	amqp_ch.start_consuming()
+
+def callback(ch, method, properties, body):
+	print("[x] Received %r" % (body,))
+	# The messagge is brodcast to the connected clients
+	result = json.dumps(body)
+	for client in clients:
+		client.sendMessage(u'' + result)
+
+def disconnect_to_rabbitmq():
+	amqp_ch.stop_consuming()
+	amqp_conn.close()
+	#Loger.logger('Disconnected from RabbitMQ')
 
 class SocketServer(WebSocket):
     def handleMessage(self):
@@ -243,10 +268,34 @@ class SocketServer(WebSocket):
         Loger.logger('closed', str(self.address))
         print(self.address, 'closed')
 
-
 port = Config.getPort()
 server = SimpleWebSocketServer('', port, SocketServer)
-server.serveforever()
+
+def startSocket():
+	server.serveforever()
+
+def stopSocket():
+	server.close()
+
+if __name__ == "__main__":
+	print ('Starting thread RabbitMQ')
+	threadRMQ = Thread(target=threaded_rmq)
+	threadRMQ.start()
+
+	threadSocket = Thread(target=startSocket)
+	threadSocket.start()
+
+	try:
+		raw_input("Server ready. Press enter to stop\n")
+	except SyntaxError:
+		pass
+	try:
+		print('Disconnecting from RabbitMQ..')
+		disconnect_to_rabbitmq()
+	except Exception, e:
+		pass
+	stopSocket()
+
 # httpd = BaseHTTPServer.HTTPServer(('', port), SimpleHTTPServer.SimpleHTTPRequestHandler)
 # httpd.socket = ssl.wrap_socket(httpd.socket, server_side=True, certfile='./cert.pem', keyfile='./cert.pem', ssl_version=ssl.PROTOCOL_TLSv1)
 # httpd.serve_forever()
