@@ -269,10 +269,10 @@ def setNullCountDialogs(data):
 	db = Config.getMongoDB(c, data['prefix'])
 	db.authenticate(auth_info['user'], auth_info['password'])
 
-	dialog = db.dialogs.find_one({'adresat': data['adresaten'], 'parent': data['iam']})
+	dialog = db.dialogs.find_one({'adresat': data['iam'], 'parent': data['adresaten']})
 
 	if (dialog != None):
-		dialog['count'] = 0
+		dialog['count'] = '0'
 		db.dialogs.save(dialog)
 
 def delMessOnChat(data):
