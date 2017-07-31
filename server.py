@@ -17,8 +17,9 @@ from Config import Config
 import BaseHTTPServer, SimpleHTTPServer
 
 clients = {}
-class SocketServer(WebSocket):
 
+
+class SocketServer(WebSocket):
     def handleMessage(self):
 		#self.sendMessage(self.data)
 		# getting message
@@ -247,22 +248,21 @@ class SocketServer(WebSocket):
 					Loger.logger('notice_from_queue' + '-responce', str(self.address))
 					Mongo.deleteNotice(notice, data['prefix'])
 
-    def handleConnected(self):
-    	print(self.address, 'connected')
-    	Loger.logger('connected', str(self.address))
-    	clients[self] = 0;
-    	
-    def handleClose(self):
-    	del clients[self]
-    	Loger.logger('closed', str(self.address))
-    	print(self.address, 'closed')
 
-    
+    def handleConnected(self):
+        print(self.address, 'connected')
+        Loger.logger('connected', str(self.address))
+        clients[self] = 0;
+
+    def handleClose(self):
+        del clients[self]
+        Loger.logger('closed', str(self.address))
+        print(self.address, 'closed')
 
 
 port = Config.getPort()
 server = SimpleWebSocketServer('', port, SocketServer)
 server.serveforever()
-#httpd = BaseHTTPServer.HTTPServer(('', port), SimpleHTTPServer.SimpleHTTPRequestHandler)
-#httpd.socket = ssl.wrap_socket(httpd.socket, server_side=True, certfile='./cert.pem', keyfile='./cert.pem', ssl_version=ssl.PROTOCOL_TLSv1)
-#httpd.serve_forever()
+# httpd = BaseHTTPServer.HTTPServer(('', port), SimpleHTTPServer.SimpleHTTPRequestHandler)
+# httpd.socket = ssl.wrap_socket(httpd.socket, server_side=True, certfile='./cert.pem', keyfile='./cert.pem', ssl_version=ssl.PROTOCOL_TLSv1)
+# httpd.serve_forever()
