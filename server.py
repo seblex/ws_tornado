@@ -29,8 +29,10 @@ class SocketServer(WebSocket):
 		if clients[self] == 0:
 			user_id = data['iam']
 			prefix = data['prefix']
+			print(prefix)
 			employee_id = Mongo.getEmployeeId(prefix, user_id)
 			clients[self] = employee_id
+			print(employee_id)
 
 		count_online = len(clients)	
 
@@ -44,7 +46,8 @@ class SocketServer(WebSocket):
 		if data['type'] == 'online':
 			users = []
 			for client in clients:
-				users.append(clients[client])
+				employee_id = Mongo.getEmployeeIdFromObj(clients[client], data['prefix'])
+				users.append(employee_id)
 			responce['users'] = users
 			result = json.dumps(responce)
 			for client in clients:
@@ -115,16 +118,23 @@ class SocketServer(WebSocket):
 		
 		if data['type'] == 'type_message':
 			result = json.dumps(responce)
+			adresaten = data['adresaten'];
+			prefix = data['prefix']
+			employee_id = Mongo.getEmployeeA(prefix, adresaten)
 			for client in clients:
-				if(clients[client] == int(data['adresaten'])):
+				if(clients[client] == employee_id):
 					client.sendMessage(u'' + result)
+					
 			Loger.logger(data['type'] + ' -responce', str(self.address))
 		
 		if data['type'] == 'new_message':
 			result = json.dumps(responce)
 			adresat_online = False
+			adresaten = data['adresaten'];
+			prefix = data['prefix']
+			employee_id = Mongo.getEmployeeA(prefix, adresaten)
 			for client in clients:
-				if(clients[client] == int(data['adresaten'])):
+				if(clients[client] == employee_id):
 					client.sendMessage(u'' + result)
 					adresat_online = True
 			if(adresat_online == False):
@@ -155,8 +165,11 @@ class SocketServer(WebSocket):
 		if data['type'] == 'file':
 			result = json.dumps(responce)
 			adresat_online = False
+			adresaten = data['adresaten'];
+			prefix = data['prefix']
+			employee_id = Mongo.getEmployeeA(prefix, adresaten)
 			for client in clients:
-				if(clients[client] == int(data['adresaten'])):
+				if(clients[client] == employee_id):
 					client.sendMessage(u'' + result)
 					adresat_online = True
 			if(adresat_online == False):
@@ -171,7 +184,7 @@ class SocketServer(WebSocket):
 		if data['type'] == 'onlineNotice':
 			action = False
 			query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
-			cur = MySQL.db_select(query)
+			cur = MySQL.db_select(query, data['prefix'])
 			for row in cur:
 				if data['type_notice'] == 'mess_on_live':
 					if row[2] == 1:
@@ -209,7 +222,7 @@ class SocketServer(WebSocket):
 			for client in clients:
 				client.sendMessage(u'' + json.dumps(data['desc']))
 
-		notices = Mongo.getNotices()
+		notices = Mongo.getNotices(data['prefix'])
 
 		for notice in notices:
 			user_id = notice['addresat']
@@ -226,11 +239,13 @@ class SocketServer(WebSocket):
 			outmessage['message'] = mess
 			outmessage = json.dumps(outmessage)
 
+			prefix = data['prefix']
+			employee_id = Mongo.getEmployeeA(prefix, user_id)
 			for client in clients:
-				if(clients[client] == int(user_id)):
+				if(clients[client] == employee_id):
 					client.sendMessage(u'' + outmessage)
 					Loger.logger('notice_from_queue' + '-responce', str(self.address))
-					Mongo.deleteNotice(notice)
+					Mongo.deleteNotice(notice, data['prefix'])
 
     def handleConnected(self):
     	print(self.address, 'connected')

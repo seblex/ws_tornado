@@ -6,5 +6,5 @@ def logger(text, emp_id):
 	now = str(now)
 	log = '[' + now + '] ' + ' : ' + emp_id + ' - ' + text
 	print(log)
-	Mongo.setLog(log)
+	#Mongo.setLog(log, prefix)
 	

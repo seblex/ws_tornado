@@ -27,7 +27,7 @@ def viewed_messages(data):
 	return data
 
 def annexesfiles(data):
-	absp = Config.getFilePath()
+	absp = Config.getFilePath(data['prefix'])
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');
@@ -41,7 +41,7 @@ def annexesfiles(data):
 		#print('OK')
 
 def filelive(data):
-	absp = Config.getFilePath()
+	absp = Config.getFilePath(data['prefix'])
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');
@@ -77,7 +77,7 @@ def filelive(data):
 			return outmessage	
 
 def file(data, count_online):
-	absp = Config.getFilePath()
+	absp = Config.getFilePath(data['prefix'])
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');
@@ -135,7 +135,7 @@ def setDialog(data):
 	
 def sounds(data):
 	query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
-	cur = MySQL.db_select(query)
+	cur = MySQL.db_select(query, data['prefix'])
 	for row in cur:
 		res = row
 	
@@ -180,7 +180,7 @@ def live(data, count_online):
 	date = time.time()
 	message['date'] = date
 	message['like'] = 0
-	new_mess_id = Mongo.insertToMessages(message)
+	new_mess_id = Mongo.insertToMessages(message, data['prefix'])
 	message['id'] = str(message['_id'])
 	message['_id'] = ''
 	message['date'] = date
@@ -191,7 +191,7 @@ def live(data, count_online):
 	return json.dumps(message)
 
 def first_messages(data, count_online):
-	messages = Mongo.getFirstMessages()
+	messages = Mongo.getFirstMessages(data['prefix'])
 
 	outmessages = []
 	for mess in messages:
@@ -205,7 +205,7 @@ def first_messages(data, count_online):
 		message['annexes'] = mess['annexes']
 		message['like'] = mess['like']
 		outmessages.append(message)
-	count_messages = Mongo.getCountAllMessages()
+	count_messages = Mongo.getCountAllMessages(data['prefix'])
 	outmessage = {}
 	outmessage['type'] = 'firstMessages'
 	outmessage['count_online'] = count_online
@@ -223,9 +223,9 @@ def comment(data, count_online):
 	coll['date'] = time.time()
 	coll['like'] = 0
 
-	Mongo.insertNewComment(coll)
+	Mongo.insertNewComment(coll, data['prefix'])
 
-	comments = Mongo.getComments(data['message_id'])
+	comments = Mongo.getComments(data['message_id'], data['prefix'])
 
 	comm = []
 	for comment in comments:
@@ -248,10 +248,10 @@ def comment(data, count_online):
 def likemess(data, count_online):
 	like = Mongo.issetLike(data)
 	if (like == 0):
-		likes = Mongo.messageLike(data['msg_id'])
-		Mongo.setLikeComm(data['msg_id'], data['id'])
+		likes = Mongo.messageLike(data['msg_id'], data['prefix'])
+		Mongo.setLikeComm(data['msg_id'], data['id'], data['prefix'])
 	else:
-		likes = Mongo.minusMessagesLike(data['msg_id'])
+		likes = Mongo.minusMessagesLike(data['msg_id'], data['prefix'])
 		Mongo.deleteCommentsLike(data)
 	outmessage = {}
 	outmessage['msg_id'] = data['msg_id']
@@ -265,10 +265,10 @@ def likemess(data, count_online):
 def likecomm(data, count_online):
 	like = Mongo.issetLike(data)
 	if (like == 0):
-		likes = Mongo.commentLike(data['msg_id'])
-		Mongo.setLikeComm(data['msg_id'], data['id'])
+		likes = Mongo.commentLike(data['msg_id'], data['prefix'])
+		Mongo.setLikeComm(data['msg_id'], data['id'], data['prefix'])
 	else:
-		likes = Mongo.minusCommentsLike(data['msg_id'])
+		likes = Mongo.minusCommentsLike(data['msg_id'], data['prefix'])
 		Mongo.deleteCommentsLike(data)
 
 	outmessage = {}
@@ -282,7 +282,7 @@ def likecomm(data, count_online):
 
 def showComments(data, count_online):
 
-	comments = Mongo.getComments(data['msg_id'])
+	comments = Mongo.getComments(data['msg_id'], data['prefix'])
 
 	comm = []
 	for comment in comments:
@@ -336,7 +336,7 @@ def allmess(data, count_online):
 		coll['viewed'] = mess['viewed']
 		if(mess['viewed'] == 0):
 			mess['viewed_time'] = time.time()
-			Mongo.updateMessageVT(mess)
+			Mongo.updateMessageVT(mess, data['prefix'])
 		coll['viewed_time'] = mess['viewed_time']
 		coll['id'] = str(mess['_id'])
 		day = 0
@@ -467,8 +467,6 @@ def notice(data):
 
 	user_id = data['address'];
 
-
-
 	return data
 
 def onlineNotice(data):
@@ -515,7 +513,7 @@ def dopmess(data):
 		mess['day'] = day
 		if(mess['viewed'] == 0):
 			mess['viewed_time'] = time.time()
-			Mongo.updateMessageVT(mess)
+			Mongo.updateMessageVT(mess, data['prefix'])
 		else:
 			mess['viewed_time'] = 0 
 
@@ -555,7 +553,7 @@ def dopmess(data):
 
 def delComm(data, count_online):
 
-	Mongo.delComm(data['id'])
+	Mongo.delComm(data['id'], data['prefix'])
 
 	outmessage = {}
 	outmessage['type'] = 'delComm'
@@ -565,7 +563,7 @@ def delComm(data, count_online):
 
 def delmess(data, count_online):
 	mess_id = data['id']
-	Mongo.deleteMessage(mess_id)
+	Mongo.deleteMessage(mess_id, data['prefix'])
 
 	outmessage = {}
 	outmessage['online'] = count_online
