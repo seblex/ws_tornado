@@ -20,24 +20,29 @@ from threading import Thread
 
 clients = {}
 
+credentials = pika.PlainCredentials('guest', 'guest')
+parameters = pika.ConnectionParameters('localhost',
+                                       5672,
+                                       '/',
+                                       credentials)
+
 # Connecting to RabbitMQ Server
-amqp_conn = pika.BlockingConnection(pika.ConnectionParameters(
-	'localhost'))
+amqp_conn = pika.BlockingConnection(parameters)
 amqp_ch = amqp_conn.channel()
 
+# Declare && Listening for named queue in Thread
 def threaded_rmq():
-	# Declare && Listening for named queue
-	amqp_ch.queue_declare(queue="my_queue", durable=False)
-	#Loger.logger('consumer ready, on queue')
-	amqp_ch.basic_consume(callback, queue="my_queue", no_ack=True)
+	amqp_ch.queue_declare(queue="import_queue", durable=True)
+	amqp_ch.basic_consume(callback, queue="import_queue", no_ack=True)
 	amqp_ch.start_consuming()
 
 def callback(ch, method, properties, body):
 	print("[x] Received %r" % (body,))
 	# The messagge is brodcast to the connected clients
-	result = json.dumps(body)
+	data = {'type': 'imported_catalog_items', 'message': body}
+	json_data = json.dumps(data)
 	for client in clients:
-		client.sendMessage(u'' + result)
+		client.sendMessage(u'' + json_data)
 
 def disconnect_to_rabbitmq():
 	amqp_ch.stop_consuming()
