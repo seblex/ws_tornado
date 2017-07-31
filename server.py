@@ -30,12 +30,12 @@ class SocketServer(WebSocket):
 		if clients[self] == 0:
 			user_id = data['iam']
 			prefix = data['prefix']
-			print(prefix)
 			employee_id = Mongo.getEmployeeId(prefix, user_id)
 			clients[self] = employee_id
-			print(employee_id)
-
+			
 		count_online = len(clients)	
+
+		print(data['type'])
 
 		responce = MessagesRouter.route(data, count_online)
 		#send responce

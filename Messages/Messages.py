@@ -41,7 +41,9 @@ def annexesfiles(data):
 		#print('OK')
 
 def filelive(data):
+	print(data['prefix'])
 	absp = Config.getFilePath(data['prefix'])
+	print(absp)
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');

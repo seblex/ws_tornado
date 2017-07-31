@@ -205,7 +205,7 @@ def getChatMessages(data):
 			mess_result.append(mess)
 		if(mess['to_id'] == to_id):
 			mess_result.append(mess)	
-
+	
 	return mess_result
 
 def setNewChatMessage(data):
