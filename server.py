@@ -20,7 +20,7 @@ from threading import Thread
 
 clients = {}
 
-credentials = pika.PlainCredentials('guest', 'guest')
+credentials = pika.PlainCredentials('admin', 'admin')
 parameters = pika.ConnectionParameters('localhost',
                                        5672,
                                        '/',
