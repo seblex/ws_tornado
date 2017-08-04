@@ -104,11 +104,11 @@ def file(data, count_online):
 	outmessage['fileName'] = data['fileName']
 	outmessage['parent'] = data['user_id']
 	outmessage['url'] = '/ws_uploads/' + data['fileName']
-			
+
 	return outmessage
 
 def type_message(data):
-
+	print(data)
 	outmessage = {}
 
 	outmessage['type'] = data['type']
@@ -504,6 +504,7 @@ def dopmess(data):
 	viewed_messages = {}
 	mess_2 = []
 	now = time.time()
+	day = ''
 	for mess in messages:
 		dop_flag += 1
 		rd = now - mess['date']
@@ -518,7 +519,7 @@ def dopmess(data):
 			Mongo.updateMessageVT(mess, data['prefix'])
 		else:
 			mess['viewed_time'] = 0 
-
+		
 		mess_to_client = {}
 		mess_to_client['viewed_time'] = mess['viewed_time']
 		mess_to_client['text'] = mess['text']

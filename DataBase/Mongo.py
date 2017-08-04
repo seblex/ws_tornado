@@ -250,8 +250,9 @@ def setDialog(data):
 		db.dialogs.save(coll)
 	else:
 		count = dialog['count']
-		dialog['count'] = count + 1
+		dialog['count'] = int(count) + 1
 		db.dialogs.save(dialog)
+		
 
 def getAllDialogs(data):
 	auth_info = Config.getMongoAuthInfo(data['prefix'])
