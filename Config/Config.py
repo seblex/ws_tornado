@@ -1,15 +1,15 @@
-#mysql config
+# mysql config
 def getDBConfig():
 	dbconfig = {}
 	dbconfig['host'] = '127.0.0.1'
 	dbconfig['user'] = 'root'
-	dbconfig['passwd'] = '050184'
+	dbconfig['passwd'] = 'p2ssw0rd'
 	dbconfig['db'] = 'mkrep'
 	dbconfig['charset'] = 'utf8'
 	
 	return dbconfig
 
-#redis config
+# redis config
 def getRedisConfig():
 	redis = {}
 	redis['host'] = '127.0.0.1'
@@ -18,9 +18,9 @@ def getRedisConfig():
 
 	return redis
 
-#mongoDB
+# mongoDB
 def getMongoDB(c):
-	db = c.ws_server #mondodb name - ws_server
+	db = c.ws_server  # mondodb name - ws_server
 
 	return db
 
@@ -32,17 +32,19 @@ def getMongoAuthInfo():
 
 	return auth_info
 
-#link to file directory
+# link to file directory
 def getFilePath():
-	filePath = '/var/www/mkrep/backend/web/ws_uploads' #absolute path to directory with files
+	filePath = '/var/www/mkrep/backend/web/uploads'  # absolute path to directory with files
 	return filePath
 
-#ws port
+
+# ws port
 def getPort():
 	port = 8095
 	return port
 
-#SMTP settings
+
+# SMTP settings
 def getSMTPconfig():
 	smtp = {}
 	smtp['server'] = "smtp.gmail.com"
