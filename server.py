@@ -33,9 +33,10 @@ amqp_ch = amqp_conn.channel()
 
 # Declare && Listening for named queue in Thread
 def threaded_rmq():
-	queue = amqp_ch.queue_declare(queue="ws_mkrep_import", durable=True, passive=True)
-	callback = AmqpCallback(queue.method.message_count)
-	amqp_ch.basic_consume(callback, queue="ws_mkrep_import", no_ack=True)
+	amqp_ch.queue_declare(queue="ws_mkrep_import", durable=True)
+	callback = ConsumerCallback()
+	# amqp_ch.basic_qos(prefetch_count=1)
+	amqp_ch.basic_consume(callback, queue="ws_mkrep_import")
 	amqp_ch.start_consuming()
 
 
@@ -45,13 +46,11 @@ def disconnect_to_rabbitmq():
 	amqp_conn.close()
 
 
-# Callback Consuming from Queue
-class AmqpCallback(object):
-	def __init__(self, count):
-		self.count = count
-
+# Callback for consuming messages from queue
+class ConsumerCallback(object):
 	def __call__(self, ch, method, properties, body):
-		data = {'type': 'imported_catalog_items', 'message': body, 'count': self.count}
+		ch.basic_ack(delivery_tag=method.delivery_tag)
+		data = {'type': 'imported_catalog_items', 'message': body}
 		json_data = json.dumps(data)
 		for client in clients:
 			client.sendMessage(u'' + json_data)

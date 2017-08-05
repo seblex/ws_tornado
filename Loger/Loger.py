@@ -7,4 +7,3 @@ def logger(text, emp_id):
 	log = '[' + now + '] ' + ' : ' + emp_id + ' - ' + text
 	print(log)
 	Mongo.setLog(log)
-	
