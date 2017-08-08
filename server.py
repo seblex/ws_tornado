@@ -17,24 +17,46 @@ from Config import Config
 import BaseHTTPServer, SimpleHTTPServer
 
 clients = {}
-
+clients_copy = {}
 
 class SocketServer(WebSocket):
     def handleMessage(self):
-		#self.sendMessage(self.data)
 		# getting message
 		data = json.loads(self.data)
+		print(data)
+		prefix = data['prefix']
+		user_id = data['iam']
 		#print(data)
 		Loger.logger(data['type'], str(self.address))
-		#getting users id and prefix
-		if clients[self] == 0:
-			user_id = data['iam']
-			prefix = data['prefix']
+		if prefix in clients:
+			clients_prefix = clients[prefix]
+			if self in clients_prefix:
+				pass
+			else:
+				employee_id = Mongo.getEmployeeId(prefix, user_id)
+				clients_prefix[self] = employee_id
+		else:
+			clients_prefix = {}
 			employee_id = Mongo.getEmployeeId(prefix, user_id)
-			clients[self] = employee_id
-			
-		count_online = len(clients)	
+			clients_prefix[self] = employee_id
+		clients[prefix] = clients_prefix
+		#getting employees for app_copy
+		if prefix in clients_copy:
+			clients_copy_app = clients_copy[prefix]
+		else:
+			clients_copy_app = []
+			#clients_copy[prefix] = []
 
+		issetEmployeeInList = False
+		for employeeInList in clients_copy_app:
+			if employeeInList == user_id:
+				issetEmployeeInList = True
+		
+		if issetEmployeeInList == False:
+			clients_copy_app.append(user_id)
+
+		clients_copy[prefix] = clients_copy_app
+		count_online = len(clients_copy[prefix])
 		print(data['type'])
 
 		responce = MessagesRouter.route(data, count_online)
@@ -45,13 +67,10 @@ class SocketServer(WebSocket):
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
 		if data['type'] == 'online':
-			users = []
-			for client in clients:
-				employee_id = Mongo.getEmployeeIdFromObj(clients[client], data['prefix'])
-				users.append(employee_id)
-			responce['users'] = users
+			responce['users'] = clients_copy[prefix]
+			responce['online'] = len(clients_copy[prefix])
 			result = json.dumps(responce)
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
@@ -67,13 +86,13 @@ class SocketServer(WebSocket):
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
 		if data['type'] == 'live':
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + responce)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
 		if data['type'] == 'delMess':
 			result = json.dumps(responce)
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
@@ -94,25 +113,25 @@ class SocketServer(WebSocket):
 		
 		if data['type'] == 'delComm':
 			result = json.dumps(responce)
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
 		if data['type'] == 'likecomm':
 			result = json.dumps(responce)
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
 		if data['type'] == 'likemess':
 			result = json.dumps(responce)
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
 		if data['type'] == 'sound':
 			result = json.dumps(responce)
-			for client in clients:
+			for client in clients[prefix]:
 				if (client != self): 
 					client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
@@ -122,8 +141,8 @@ class SocketServer(WebSocket):
 			adresaten = data['adresaten'];
 			prefix = data['prefix']
 			employee_id = Mongo.getEmployeeA(prefix, adresaten)
-			for client in clients:
-				if(clients[client] == employee_id):
+			for client in clients[prefix]:
+				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + result)
 					
 			Loger.logger(data['type'] + ' -responce', str(self.address))
@@ -134,8 +153,10 @@ class SocketServer(WebSocket):
 			adresaten = data['adresaten'];
 			prefix = data['prefix']
 			employee_id = Mongo.getEmployeeA(prefix, adresaten)
-			for client in clients:
-				if(clients[client] == employee_id):
+			print(employee_id)
+			for client in clients[prefix]:
+				print(clients[prefix][client])
+				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + result)
 					adresat_online = True
 			if(adresat_online == False):
@@ -159,7 +180,7 @@ class SocketServer(WebSocket):
 
 		if data['type'] == 'filelive':
 			result = json.dumps(responce)
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 
@@ -170,7 +191,7 @@ class SocketServer(WebSocket):
 			prefix = data['prefix']
 			employee_id = Mongo.getEmployeeA(prefix, adresaten)
 			for client in clients:
-				if(clients[client] == employee_id):
+				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + result)
 					adresat_online = True
 			if(adresat_online == False):
@@ -198,29 +219,29 @@ class SocketServer(WebSocket):
 						action = True
 			if action == True:	
 				result = json.dumps(responce)
-				for client in clients:
+				for client in clients[prefix]:
 					if (client != self): 
 						client.sendMessage(u'' + result)
 				Loger.logger(data['type'] + '-responce', str(self.address))
 
 		if data['type'] == 'offer':
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + json.dumps(data['desc']))
 
 		if data['type'] == 'answer':
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + json.dumps(data['desc']))
 
 		if data['type'] == 'ice1':
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + json.dumps(data['desc']))
 
 		if data['type'] == 'ice2':
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + json.dumps(data['desc']))
 
 		if data['type'] == 'hangup':
-			for client in clients:
+			for client in clients[prefix]:
 				client.sendMessage(u'' + json.dumps(data['desc']))
 
 		notices = Mongo.getNotices(data['prefix'])
@@ -242,22 +263,35 @@ class SocketServer(WebSocket):
 
 			prefix = data['prefix']
 			employee_id = Mongo.getEmployeeA(prefix, user_id)
-			for client in clients:
-				if(clients[client] == employee_id):
+			for client in clients[prefix]:
+				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + outmessage)
 					Loger.logger('notice_from_queue' + '-responce', str(self.address))
 					Mongo.deleteNotice(notice, data['prefix'])
 
 
     def handleConnected(self):
-        print(self.address, 'connected')
-        Loger.logger('connected', str(self.address))
-        clients[self] = 0;
+		print(self.address, 'connected')
+		Loger.logger('connected', str(self.address))
+		
 
     def handleClose(self):
-        del clients[self]
-        Loger.logger('closed', str(self.address))
-        print(self.address, 'closed')
+    	#delete self
+    	for client in clients:
+    		for cl in clients[client]:
+    			if self in clients[client]:
+    				prefix = client
+    				user_id = clients[client][self]
+    				employee_id = Mongo.getEmployeeIdFromObj(user_id, prefix)
+    				for client_app in clients_copy[prefix]:
+    					employee = str(employee_id)
+    					if client_app == employee:
+    						clients_copy[prefix].remove(client_app)
+    						
+    				del clients[client][self]
+    				
+    				Loger.logger('closed', str(self.address))
+    				print(self.address, 'closed')
 
 
 port = Config.getPort()

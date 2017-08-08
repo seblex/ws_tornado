@@ -7,6 +7,12 @@ def getDBConfig(prefix):
 		dbconfig['passwd'] = '050184'
 		dbconfig['db'] = 'mkrep'
 		dbconfig['charset'] = 'utf8'
+	if(prefix == 'sspb_'):
+		dbconfig['host'] = '127.0.0.1'
+		dbconfig['user'] = 'root'
+		dbconfig['passwd'] = '050184'
+		dbconfig['db'] = 'sharikoff'
+		dbconfig['charset'] = 'utf8'
 	
 	return dbconfig
 
@@ -17,6 +23,10 @@ def getRedisConfig(prefix):
 		redis['host'] = '127.0.0.1'
 		redis['port'] = 6379
 		redis['db'] = 0
+	if(prefix == 'sspb_'):
+		redis['host'] = '127.0.0.1'
+		redis['port'] = 6379
+		redis['db'] = 0
 
 	return redis
 
@@ -24,12 +34,18 @@ def getRedisConfig(prefix):
 def getMongoDB(c, prefix):
 	if(prefix == 'eko_'):
 		db = c.ws_server #mondodb name - ws_server
+	if(prefix == 'sspb_'):
+		db = c.ws_server_sspb;
 
 	return db
 
 def getMongoAuthInfo(prefix):
 	auth_info = {}
 	if(prefix == 'eko_'):
+		auth_info['user'] = 'admin'
+		auth_info['password'] = 'admin'
+		auth_info['server'] = '127.0.0.1'
+	if(prefix == 'sspb_'):
 		auth_info['user'] = 'admin'
 		auth_info['password'] = 'admin'
 		auth_info['server'] = '127.0.0.1'
@@ -40,6 +56,9 @@ def getMongoAuthInfo(prefix):
 def getFilePath(prefix):
 	if(prefix == 'eko_'):
 		filePath = '/var/www/mkrep/backend/web/ws_uploads' #absolute path to directory with files
+	if(prefix == 'sspb_'):
+		filePath = '/var/www/mkrepcopy2/backend/web/ws_uploads' #absolute path to directory with files
+
 	return filePath
 
 #ws port

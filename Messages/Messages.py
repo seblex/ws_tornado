@@ -17,10 +17,11 @@ from Notices import Notices
 
 #responce 'ping'
 def ping(data):
+	print(data)
 	responce = {}
 	responce['text'] = 'pong'
 	responce['type'] = 'ping'
-	
+	print(responce)
 	return responce
 
 def viewed_messages(data):
@@ -41,9 +42,7 @@ def annexesfiles(data):
 		#print('OK')
 
 def filelive(data):
-	print(data['prefix'])
 	absp = Config.getFilePath(data['prefix'])
-	print(absp)
 	if (os.path.exists(absp) == False):
 		os.mkdir(absp)
 	file = data['file'].split('base64');
@@ -108,14 +107,13 @@ def file(data, count_online):
 	return outmessage
 
 def type_message(data):
-	print(data)
 	outmessage = {}
-
+	
 	outmessage['type'] = data['type']
 	outmessage['event'] = data['event']
 	outmessage['user'] = data['iam']
 	outmessage['adresat'] = data['adresaten']
-
+	
 	return outmessage
 
 def new_message(data):
@@ -158,6 +156,7 @@ def sounds(data):
 	return responce
 
 def sound(data):
+	print(data)
 	outmessage = {}
 	outmessage['type'] = data['type']
 	outmessage['sound_event'] = data['sound_event']
@@ -168,7 +167,7 @@ def online(data, count_online):
 	responce = {}
 	responce['online'] = count_online
 	responce['type'] = 'online'
-
+	print(responce)
 	return responce
 
 def live(data, count_online):
@@ -455,8 +454,6 @@ def alldialogs(data, count_online):
 		coll['name'] = employees[employee]['firstname'] + ' ' + employees[employee]['lastname']
 		users.append(coll)
 	
-
-
 	outmessage = {}
 	outmessage['type'] = 'alldialogs'
 	outmessage['users'] = users

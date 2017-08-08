@@ -386,18 +386,19 @@ def getEmployeeIdFromObj(_id, prefix):
 	db.authenticate(auth_info['user'], auth_info['password'])
 
 	employee = db.employees.find({'_id': _id})
+	
 	for emp in employee:
-		employee_id = emp['id']
+		employee_id = emp['user_id']
 
 	return employee_id
-
+	
 def getEmployeeA(prefix, employee_id):
 	auth_info = Config.getMongoAuthInfo(prefix)
 	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c, prefix)
 	db.authenticate(auth_info['user'], auth_info['password'])
 	employee_id = int(employee_id)
-	employee = db.employees.find({'id': employee_id, 'prefix': prefix})
+	employee = db.employees.find({'user_id': employee_id, 'prefix': prefix})
 
 	for emp in employee:
 		employeeid = emp['_id']
