@@ -23,10 +23,9 @@ class SocketServer(WebSocket):
     def handleMessage(self):
 		# getting message
 		data = json.loads(self.data)
-		print(data)
+		#print(data)
 		prefix = data['prefix']
 		user_id = data['iam']
-		#print(data)
 		Loger.logger(data['type'], str(self.address))
 		if prefix in clients:
 			clients_prefix = clients[prefix]
@@ -39,6 +38,7 @@ class SocketServer(WebSocket):
 			clients_prefix = {}
 			employee_id = Mongo.getEmployeeId(prefix, user_id)
 			clients_prefix[self] = employee_id
+		
 		clients[prefix] = clients_prefix
 		#getting employees for app_copy
 		if prefix in clients_copy:
@@ -82,6 +82,7 @@ class SocketServer(WebSocket):
 		
 		if data['type'] == 'sounds':
 			result = json.dumps(responce)
+
 			self.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
@@ -131,16 +132,22 @@ class SocketServer(WebSocket):
 		
 		if data['type'] == 'sound':
 			result = json.dumps(responce)
-			for client in clients[prefix]:
-				if (client != self): 
-					client.sendMessage(u'' + result)
+			if(data['adresaten'] == 0):
+				for client in clients[prefix]:
+					if (client != self): 
+						client.sendMessage(u'' + result)
+			else:
+				employee_id = Mongo.getEmployeeId(prefix, data['adresaten'])
+				for client in clients[prefix]:
+					if(clients[prefix][client] == employee_id):
+						client.sendMessage(u'' + result)
 			Loger.logger(data['type'] + '-responce', str(self.address))
 		
 		if data['type'] == 'type_message':
 			result = json.dumps(responce)
 			adresaten = data['adresaten'];
 			prefix = data['prefix']
-			employee_id = Mongo.getEmployeeA(prefix, adresaten)
+			employee_id = Mongo.getEmployeeId(prefix, adresaten)
 			for client in clients[prefix]:
 				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + result)
@@ -152,10 +159,8 @@ class SocketServer(WebSocket):
 			adresat_online = False
 			adresaten = data['adresaten'];
 			prefix = data['prefix']
-			employee_id = Mongo.getEmployeeA(prefix, adresaten)
-			print(employee_id)
+			employee_id = Mongo.getEmployeeId(prefix, adresaten)
 			for client in clients[prefix]:
-				print(clients[prefix][client])
 				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + result)
 					adresat_online = True
@@ -189,8 +194,8 @@ class SocketServer(WebSocket):
 			adresat_online = False
 			adresaten = data['adresaten'];
 			prefix = data['prefix']
-			employee_id = Mongo.getEmployeeA(prefix, adresaten)
-			for client in clients:
+			employee_id = Mongo.getEmployeeId(prefix, adresaten)
+			for client in clients[prefix]:
 				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + result)
 					adresat_online = True
@@ -262,7 +267,7 @@ class SocketServer(WebSocket):
 			outmessage = json.dumps(outmessage)
 
 			prefix = data['prefix']
-			employee_id = Mongo.getEmployeeA(prefix, user_id)
+			employee_id = Mongo.getEmployeeId(prefix, user_id)
 			for client in clients[prefix]:
 				if(clients[prefix][client] == employee_id):
 					client.sendMessage(u'' + outmessage)

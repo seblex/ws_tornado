@@ -103,5 +103,8 @@ def route(data, count_online):
 	if(data['type'] == 'delMessOnChat'):
 		responce = Messages.delMessOnChat(data, count_online)
 
+	if(data['type'] == 'deldialog'):
+		responce = Messages.deldialog(data)
+
 	return responce
 

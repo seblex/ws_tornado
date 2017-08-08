@@ -17,11 +17,10 @@ from Notices import Notices
 
 #responce 'ping'
 def ping(data):
-	print(data)
 	responce = {}
 	responce['text'] = 'pong'
 	responce['type'] = 'ping'
-	print(responce)
+	
 	return responce
 
 def viewed_messages(data):
@@ -134,7 +133,7 @@ def setDialog(data):
 	Mongo.setDialog(data)
 	
 def sounds(data):
-	query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = " + data['iam']
+	query = "SELECT * FROM `" + data['prefix'] + "csettings` WHERE `employee_id` = '" + data['iam'] + "'"
 	cur = MySQL.db_select(query, data['prefix'])
 	for row in cur:
 		res = row
@@ -156,7 +155,7 @@ def sounds(data):
 	return responce
 
 def sound(data):
-	print(data)
+	
 	outmessage = {}
 	outmessage['type'] = data['type']
 	outmessage['sound_event'] = data['sound_event']
@@ -167,7 +166,7 @@ def online(data, count_online):
 	responce = {}
 	responce['online'] = count_online
 	responce['type'] = 'online'
-	print(responce)
+	
 	return responce
 
 def live(data, count_online):
@@ -596,3 +595,7 @@ def delMessOnChat(data, count_online):
 def getEmployeeCache(prefix):
 	employees = Mongo.getEmployees(prefix)
 	return employees
+
+def deldialog(data):
+	Mongo.delDialog(data)
+	return False

@@ -366,17 +366,17 @@ def getEmployee(prefix, _id):
 	return employee
 
 def getEmployeeId(prefix, user_id):
-	print(prefix)
 	auth_info = Config.getMongoAuthInfo(prefix)
 	c = MongoClient(auth_info['server'])
 	db = Config.getMongoDB(c, prefix)
 	db.authenticate(auth_info['user'], auth_info['password'])
 	user_id = int(user_id)
-	employee = db.employees.find({'prefix': prefix, 'user_id': user_id})
+	
+	employee = db.employees.find({'prefix': prefix, 'id': user_id})
 	
 	for emp in employee:
 		employee_id = emp['_id']
-
+	
 	return employee_id
 
 def getEmployeeIdFromObj(_id, prefix):
@@ -446,3 +446,11 @@ def setLog(log, prefix):
 	coll = {}
 	coll['log'] = log
 	db.logs.save(coll)
+
+def delDialog(data):
+	auth_info = Config.getMongoAuthInfo(data['prefix'])
+	c = MongoClient(auth_info['server'])
+	db = Config.getMongoDB(c, data['prefix'])
+	db.authenticate(auth_info['user'], auth_info['password'])
+
+	db.dialogs.remove({'adresat': data['user_id'], 'parent': data['iam']})

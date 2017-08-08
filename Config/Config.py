@@ -5,7 +5,7 @@ def getDBConfig(prefix):
 		dbconfig['host'] = '127.0.0.1'
 		dbconfig['user'] = 'root'
 		dbconfig['passwd'] = '050184'
-		dbconfig['db'] = 'mkrep'
+		dbconfig['db'] = 'mkrep2'
 		dbconfig['charset'] = 'utf8'
 	if(prefix == 'sspb_'):
 		dbconfig['host'] = '127.0.0.1'
